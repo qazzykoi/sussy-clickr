@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SUSSY CLICKR</title>
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+    <style>
+        body {
+            background-color: #0f0f12;
+            color: #00ff66;
+            font-family: 'Impact', 'Arial Black', sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            user-select: none;
+            transition: background 0.5s ease, box-shadow 0.5s ease;
+        }
+
+        h1 {
+            color: #ff3333;
+            font-size: 3.5rem;
+            text-shadow: 3px 3px 0px #fff;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #888;
+            font-family: monospace;
+            margin-bottom: 25px;
+        }
+
+        .stats-container {
+            background: #1a1a24;
+            border: 4px solid #333;
+            padding: 15px;
+            max-width: 600px;
+            margin: 0 auto 25px auto;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 255, 102, 0.1);
+        }
+
+        .main-display {
+            font-size: 2.5rem;
+            color: #ffffff;
+            text-shadow: 2px 2px #ff3333;
+        }
+
+        .sub-display {
+            font-size: 1.2rem;
+            color: #00ff66;
+            font-family: monospace;
+            margin-top: 5px;
+        }
+
+        #main-clicker {
+            background: radial-gradient(circle, #ff4d4d 0%, #990000 100%);
+            color: white;
+            border: 6px solid #fff;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            font-size: 1.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 15px 0px #550000, 0 20px 20px rgba(0,0,0,0.6);
+            transition: all 0.05s ease;
+            margin: 20px auto;
+            display: block;
+            text-shadow: 2px 2px 4px #000;
+        }
+
+        #main-clicker:active {
+            transform: translateY(10px);
+            box-shadow: 0 5px 0px #550000, 0 10px 10px rgba(0,0,0,0.6);
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 10px;
+        }
+
+        .panel {
+            background: #15151c;
+            border: 3px solid #ff3333;
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .panel.gamble-panel { border-color: #ffcc00; background: #1c1910; }
+        .panel.prestige-panel { border-color: #9933ff; background: #16101c; }
+        .panel.crypto-panel { border-color: #00bfff; background: #0e1724; }
+        .panel.achievement-panel { border-color: #ff1493; background: #240e1b; }
+
+        .panel h3 { margin: 0 0 10px 0; font-size: 1.4rem; color: #fff; }
+        .panel p { font-family: monospace; font-size: 0.9rem; color: #aaa; margin: 5px 0; }
+
+        .action-btn {
+            background: #222; color: #fff; border: 3px solid #444;
+            padding: 12px; font-size: 1.1rem; font-weight: bold;
+            cursor: pointer; border-radius: 5px; width: 100%; margin-top: 10px;
+        }
+
+        .action-btn:hover:not(:disabled) { background: #ff3333; color: black; border-color: #fff; }
+        .gamble-panel .action-btn:hover:not(:disabled) { background: #ffcc00; }
+        .prestige-panel .action-btn:hover:not(:disabled) { background: #9933ff; }
+        .crypto-panel .action-btn:hover:not(:disabled) { background: #00bfff; }
+
+        .action-btn:disabled { background: #0b0b0d; color: #444; border-color: #222; cursor: not-allowed; }
+
+        .win-screen {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); color: #ffcc00; font-size: 4rem; padding-top: 20%; z-index: 9999;
+        }
+
+        .clear-btn { background: #444; color: #bbb; border: none; padding: 5px 10px; font-size: 10px; cursor: pointer; border-radius: 3px; margin-top: 20px; }
+
+        /* Chart Canvas Design Container */
+        .chart-box {
+            background: #050508;
+            border: 2px dashed #00bfff;
+            height: 80px;
+            margin-top: 10px;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-box svg {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="win-popup" class="win-screen">📮 GYATT! YOU ARE THE ULTIMATE IMPOSTOR! YOU WIN! 📮</div>
+
+    <h1>ඞ SUSSY CLICKER ඞ</h1>
+    <div class="subtitle">The Brainrot Wealth Simulator</div>
+
+    <div class="stats-container" id="box-stats">
+        <div class="main-display">$<span id="sus-points">0</span></div>
+        <div class="sub-display">
+            SPS: $<span id="sps-display">0</span> | Multiplier: <span id="prestige-display">1</span>x | Aura Bonus: +<span id="aura-bonus-display">0</span>%
+        </div>
+    </div>
+
+    <button id="main-clicker" onclick="clickSussy(event)">GET SUSSY </button>
+
+    <div class="grid-container">
+        <div class="panel">
+            <div>
+                <h3>Crewmate Disguise</h3>
+                <p>Increases cash per click.</p>
+                <p>Current Power: +$<span id="click-power-display">1</span>/click</p>
+            </div>
+            <button id="btn-disguise" class="action-btn" onclick="buyDisguise()">Cost: $<span id="cost-disguise">15</span></button>
+        </div>
+
+        <div class="panel">
+            <div>
+                <h3>Vent Shortcut</h3>
+                <p>Generates passive income streams.</p>
+                <p>Current Output: +$<span id="vent-power-display">0</span>/sec</p>
+            </div>
+            <button id="btn-vent" class="action-btn" onclick="buyVent()">Cost: $<span id="cost-vent">100</span></button>
+        </div>
+
+        <div class="panel gamble-panel">
+            <div>
+                <h3>🎰 Double or Coderot</h3>
+                <p>50% Chance: Double your cash.</p>
+                <p>50% Chance: Wipe your current bank account.</p>
+            </div>
+            <button id="btn-gamble" class="action-btn" onclick="gambleEverything()">SPIN THE WHEEL</button>
+        </div>
+
+        <div class="panel prestige-panel">
+            <div>
+                <h3>🧬 Transmutation (Prestige)</h3>
+                <p>Reset assets for permanent income multipliers.</p>
+                <p>Requires $100,000.</p>
+            </div>
+            <button id="btn-prestige" class="action-btn" onclick="prestige()">Prestige (+<span id="pending-prestige">0</span> Mult)</button>
+        </div>
+
+        <!-- CRYPTO MARKET PANEL WITH LIVE SVG CHART -->
+        <div class="panel crypto-panel">
+            <div>
+                <h3>📈 $SUSCOIN MARKET</h3>
+                <p>Price updates every 3s. Buy low, sell high.</p>
+                <p style="color: #00bfff;">Price: $<span id="crypto-price">10</span></p>
+                <p>Your Bag: <span id="crypto-inventory">0</span> Tokens</p>
+                <div class="chart-box">
+                    <svg id="crypto-svg-chart">
+                        <polyline fill="none" stroke="#00bfff" stroke-width="3" points="0,40 50,40 100,40 150,40 200,40 250,40 300,40" id="chart-line"/>
+                    </svg>
+                </div>
+            </div>
+            <div style="display:flex; gap: 5px; margin-top: 5px;">
+                <button id="btn-buy-crypto" class="action-btn" onclick="buyCrypto()">BUY 1</button>
+                <button id="btn-sell-crypto" class="action-btn" onclick="sellCrypto()">SELL ALL</button>
+            </div>
+        </div>
+
+        <!-- AURA ACHIEVEMENT TRACKER -->
+        <div class="panel achievement-panel">
+            <div>
+                <h3>🏆 AURA TRACKER</h3>
+                <p>Bankruptcies: <span id="stat-losses">0</span></p>
+                <p id="badge-1" style="color: #444;"> CODEROT CASUAL (+10% Boost)</p>
+                <p id="badge-2" style="color: #444;"> SKIBIDI DEGEN (+25% Boost)</p>
+            </div>
+        </div>
+
+        <div class="panel gamble-panel" style="grid-column: 1 / -1; border-color: #ff3333;">
+            <div>
+                <h3>🏆 BUY THE SUSSY WIN CONDITION</h3>
+                <p>10% Choice drop. Price climbs if you blank!</p>
+            </div>
+            <button id="btn-win" class="action-btn" onclick="gambleWinCondition()" style="font-size: 1.5rem; color: #ffcc00;">BUY WIN TICKET (Price: $<span id="win-cost-display">1,000,000,000</span>)</button>
+        </div>
+    </div>
+
+    <button class="clear-btn" onclick="clearSave()">Wipe Save File</button>
+
+    <script>
+        let audioCtx = null;
+        function initAudio() { if (!audioCtx) { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } }
+
+        function playSound(type) {
+            initAudio(); if (!audioCtx) return;
+            let osc = audioCtx.createOscillator(); let gainNode = audioCtx.createGain();
+            osc.connect(gainNode); gainNode.connect(audioCtx.destination);
+            let now = audioCtx.currentTime;
+
+            if (type === 'click') {
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(150, now); osc.frequency.exponentialRampToValueAtTime(300, now + 0.08);
+                gainNode.gain.setValueAtTime(0.15, now); gainNode.gain.linearRampToValueAtTime(0.01, now + 0.08);
+                osc.start(now); osc.stop(now + 0.08);
+            } else if (type === 'win') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(523.25, now); osc.frequency.setValueAtTime(659.25, now + 0.1); osc.frequency.setValueAtTime(783.99, now + 0.2);
+                    gainNode.gain.setValueAtTime(0.2, now); gainNode.gain.linearRampToValueAtTime(0.01, now + 0.4);
+    osc.start(now); osc.stop(now + 0.4);
+} else if (type === 'lose') {
+    osc.type = 'sawtooth'; osc.frequency.setValueAtTime(120, now); osc.frequency.linearRampToValueAtTime(40, now + 0.3);
+    gainNode.gain.setValueAtTime(0.3, now); gainNode.gain.linearRampToValueAtTime(0.01, now + 0.3);
+    osc.start(now); osc.stop(now + 0.3);
+} else if (type === 'prestige') {
+    osc.type = 'sine'; osc.frequency.setValueAtTime(200, now); osc.frequency.exponentialRampToValueAtTime(1200, now + 0.5);
+    gainNode.gain.setValueAtTime(0.2, now); gainNode.gain.linearRampToValueAtTime(0.01, now + 0.5);
+    osc.start(now); osc.stop(now + 0.5);
+}
+}
+
+const DEFAULT_GAME = {
+    susPoints: 0, basePointsPerClick: 1, baseAutoSusPerSecond: 0, prestigeMultiplier: 1,
+    winPrice: 1000000000, baseWinPrice: 1000000000, cryptoTokens: 0, cryptoPrice: 10, totalLosses: 0,
+    costs: { disguise: 15, vent: 100 }
+};
+
+let game = { ...DEFAULT_GAME };
+let priceHistory = []; 
+
+function loadGame() {
+    let saved = localStorage.getItem('sussy_clicker_save_v4');
+    if (saved) { try { game = Object.assign({}, DEFAULT_GAME, JSON.parse(saved)); } catch(e) {} }
+}
+function saveGame() { localStorage.setItem('sussy_clicker_save_v4', JSON.stringify(game)); }
+function clearSave() { if(confirm("Permanently wipe your meta account?")) { localStorage.removeItem('sussy_clicker_save_v4'); game = JSON.parse(JSON.stringify(DEFAULT_GAME)); updateUI(); } }
+
+function getAuraBonus() {
+    let bonus = 0;
+    if (game.totalLosses >= 1) bonus += 10;
+    if (game.totalLosses >= 5) bonus += 25;
+    return bonus;
+}
+
+function getClickPower() { return game.basePointsPerClick * game.prestigeMultiplier * (1 + getAuraBonus()/100); }
+function getSPS() { return game.baseAutoSusPerSecond * game.prestigeMultiplier * (1 + getAuraBonus()/100); }
+
+function clickSussy(event) {
+    playSound('click'); let amount = getClickPower(); game.susPoints += amount;
+    let clickerBtn = document.getElementById('main-clicker'); let rect = clickerBtn.getBoundingClientRect();
+    let txt = document.createElement('div'); txt.innerText = `+$${Math.floor(amount).toLocaleString()}`;
+    txt.style.position = 'absolute'; txt.style.color = '#00ff66'; txt.style.fontFamily = 'Impact'; txt.style.fontSize = '24px';
+    txt.style.pointerEvents = 'none'; txt.style.zIndex = '1000'; txt.style.textShadow = '2px 2px #000';
+    txt.style.left = `${rect.left + (rect.width/2) + (Math.random()-0.5)*60}px`; txt.style.top = `${rect.top + window.scrollY}px`;
+    document.body.appendChild(txt);
+    let top = rect.top + window.scrollY; let op = 1;
+    let f = setInterval(() => { top -= 3; op -= 0.05; txt.style.top = `${top}px`; txt.style.opacity = op; if (op <= 0) { clearInterval(f); txt.remove(); } }, 20);
+    updateUI();
+}
+
+function buyDisguise() { if (game.susPoints >= game.costs.disguise) { game.susPoints -= game.costs.disguise; game.basePointsPerClick += 1; game.costs.disguise = Math.ceil(game.costs.disguise * 1.15); playSound('click'); updateUI(); } }
+function buyVent() { if (game.susPoints >= game.costs.vent) { game.susPoints -= game.costs.vent; game.baseAutoSusPerSecond += 5; game.costs.vent = Math.ceil(game.costs.vent * 1.15); playSound('click'); updateUI(); } }
+
+function gambleEverything() {
+    if (game.susPoints <= 0) return;
+    if (Math.random() < 0.5) { game.susPoints *= 2; playSound('win'); alert("🎰 SEED BLESSED! You doubled your money!"); }
+    else { game.susPoints = 0; game.totalLosses++; playSound('lose'); alert("❌ CODEROT STRUCK! You lost your entire bank account!"); }
+    updateUI();
+}
+
+function buyCrypto() { if (game.susPoints >= game.cryptoPrice) { game.susPoints -= game.cryptoPrice; game.cryptoTokens++; playSound('click'); updateUI(); } }
+function sellCrypto() { if (game.cryptoTokens > 0) { game.susPoints += (game.cryptoTokens * game.cryptoPrice); game.cryptoTokens = 0; playSound('win'); updateUI(); } }
+
+function gambleWinCondition() {
+    if (game.susPoints >= game.winPrice) {
+        game.susPoints -= game.winPrice;
+        if (Math.random() < 0.10) { playSound('win'); document.getElementById('win-popup').style.display = 'block'; }
+        else { game.winPrice = Math.ceil(game.winPrice * 1.50); playSound('lose'); alert("❌ BRO GOT SCAMMED! Ticket was blank. Cost escalated!"); }
+        updateUI();
+    }
+}
+
+function prestige() {
+    if (game.susPoints >= 100000) {
+        let gain = Math.floor(Math.log10(game.susPoints) - 4); if (gain < 1) gain = 1;
+        game.prestigeMultiplier += gain; game.baseWinPrice = Math.ceil(game.baseWinPrice * 2.5); game.winPrice = game.baseWinPrice;
+        game.susPoints = 0; game.basePointsPerClick = 1; game.baseAutoSusPerSecond = 0; game.costs.disguise = 15; game.costs.vent = 100; game.cryptoTokens = 0;
+        playSound('prestige'); alert(`🧬 ASCENSION ATTAINED! Income is now ${game.prestigeMultiplier}x!`); updateUI();
+    }
+}
+
+setInterval(() => { let sps = getSPS(); if (sps > 0) { game.susPoints += (sps / 20); updateUI(); } }, 50);
+setInterval(() => { saveGame(); }, 10000);
+
+// Crypto Ticker and Live SVG Chart Mapper Array Loop
+setInterval(() => {
+    let change = (Math.random() - 0.48) * 8;
+    game.cryptoPrice = Math.max(1, Math.ceil(game.cryptoPrice + change));
+    let graphHeightValue = 80 - Math.min(75, Math.max(5, game.cryptoPrice));
+    priceHistory.push(graphHeightValue);
+    if (priceHistory.length > 7) priceHistory.shift();
+    
+    let pointsString = "";
+    for (let i = 0; i < priceHistory.length; i++) {
+        pointsString += `${i * 50},${priceHistory[i]} `;
+    }
+    document.getElementById('chart-line').setAttribute('points', pointsString.trim());
+    updateUI();
+}, 3000);
+
+const slangEncounters = [
+    { text: "🚨 A WILD IMPOSTOR CHALLENGES YOU TO A SKIBIDI COIN FLIP! 🚨", winMsg: "💰 CHIPPED EM! You clutched the coin flip!", loseMsg: "🤡 SKILL ISSUE! He default danced and took your cash!" },
+    { text: "📦 AN ULTRA RARE SUSSY SUPPLY DROP FELL IN THE VENT! 📦", winMsg: "🔥 WE ARE SO BACK! Pulled a Golden Skull Trooper!", loseMsg: "💀 CHALKED! Just a blue spray canister." }
+];
+
+setInterval(() => {
+    if (game.susPoints > 500 && Math.random() < 0.20) {
+        let wager = Math.floor(game.susPoints * 0.30); let s = slangEncounters[Math.floor(Math.random() * slangEncounters.length)];
+        if (confirm(`${s.text}\n\nWager 30% ($${wager.toLocaleString()})?`)) {
+            if (Math.random() < 0.45) { game.susPoints += wager; playSound('win'); alert(s.winMsg); }
+            else { game.susPoints -= wager; if(game.susPoints <= 0) game.totalLosses++; playSound('lose'); alert(s.loseMsg); }
+            updateUI();
+        }
+    }
+}, 15000);
+
+function updateUI() {
+    document.getElementById('sus-points').innerText = Math.floor(game.susPoints).toLocaleString();
+    document.getElementById('sps-display').innerText = Math.floor(getSPS()).toLocaleString();
+    document.getElementById('click-power-display').innerText = getClickPower().toLocaleString();
+    document.getElementById('prestige-display').innerText = game.prestigeMultiplier;
+    document.getElementById('aura-bonus-display').innerText = getAuraBonus();
+    document.getElementById('crypto-price').innerText = game.cryptoPrice.toLocaleString();
+    document.getElementById('crypto-inventory').innerText = game.cryptoTokens.toLocaleString();
+    document.getElementById('stat-losses').innerText = game.totalLosses;
+    document.getElementById('cost-disguise').innerText = game.costs.disguise.toLocaleString();
+    document.getElementById('cost-vent').innerText = game.costs.vent.toLocaleString();
+    document.getElementById('win-cost-display').innerText = game.winPrice.toLocaleString();
+    
+    document.getElementById('btn-disguise').disabled = (game.susPoints < game.costs.disguise);
+    document.getElementById('btn-vent').disabled = (game.susPoints < game.costs.vent);
+    document.getElementById('btn-win').disabled = (game.susPoints < game.winPrice);
+    document.getElementById('btn-gamble').disabled = (game.susPoints <= 0);
+    document.getElementById('btn-buy-crypto').disabled = (game.susPoints < game.cryptoPrice);
+    document.getElementById('btn-sell-crypto').disabled = (game.cryptoTokens <= 0);
+    
+    let b1 = document.getElementById('badge-1'); 
+    if(game.totalLosses >= 1) { b1.innerText = "[X] CODEROT CASUAL (+10%)"; b1.style.color = "#00ff66"; }
+    let b2 = document.getElementById('badge-2'); 
+    if(game.totalLosses >= 5) { b2.innerText = "[X] SKIBIDI DEGEN (+25%)"; b2.style.color = "#00ff66"; }
+    
+    if (game.susPoints >= 100000) {
+        let pending = Math.floor(Math.log10(game.susPoints) - 4);
+        document.getElementById('pending-prestige').innerText = pending < 1 ? 1 : pending;
+        document.getElementById('btn-prestige').disabled = false;
+    } else { 
+        document.getElementById('pending-prestige').innerText = "0"; 
+        document.getElementById('btn-prestige').disabled = true; 
+    }
+
+    let body = document.body;
+    let statsBox = document.getElementById('box-stats');
+    if (game.susPoints >= 100000000) {
+        body.style.background = "#0c192b";
+        body.style.boxShadow = "inset 0 0 100px rgba(0, 191, 255, 0.4)";
+        statsBox.style.borderColor = "#00bfff";
+    } else if (game.susPoints >= 1000000) {
+        body.style.background = "#1c1605";
+        body.style.boxShadow = "inset 0 0 100px rgba(255, 204, 0, 0.3)";
+        statsBox.style.borderColor = "#ffcc00";
+    } else {
+        body.style.background = "#0f0f12";
+        body.style.boxShadow = "none";
+        statsBox.style.borderColor = "#333";
+    }
+}
+
+loadGame();
+updateUI();
+</script>
