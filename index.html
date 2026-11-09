@@ -124,7 +124,6 @@
 
         .clear-btn { background: #444; color: #bbb; border: none; padding: 5px 10px; font-size: 10px; cursor: pointer; border-radius: 3px; margin-top: 20px; }
 
-        /* Chart Canvas Design Container */
         .chart-box {
             background: #050508;
             border: 2px dashed #00bfff;
@@ -194,7 +193,6 @@
             <button id="btn-prestige" class="action-btn" onclick="prestige()">Prestige (+<span id="pending-prestige">0</span> Mult)</button>
         </div>
 
-        <!-- CRYPTO MARKET PANEL WITH LIVE SVG CHART -->
         <div class="panel crypto-panel">
             <div>
                 <h3>📈 $SUSCOIN MARKET</h3>
@@ -213,7 +211,6 @@
             </div>
         </div>
 
-        <!-- AURA ACHIEVEMENT TRACKER -->
         <div class="panel achievement-panel">
             <div>
                 <h3>🏆 AURA TRACKER</h3>
@@ -244,181 +241,228 @@
             osc.connect(gainNode); gainNode.connect(audioCtx.destination);
             let now = audioCtx.currentTime;
 
-            if (type === 'click') {
+                        if (type === 'click') {
                 osc.type = 'triangle'; osc.frequency.setValueAtTime(150, now); osc.frequency.exponentialRampToValueAtTime(300, now + 0.08);
                 gainNode.gain.setValueAtTime(0.15, now); gainNode.gain.linearRampToValueAtTime(0.01, now + 0.08);
                 osc.start(now); osc.stop(now + 0.08);
             } else if (type === 'win') {
                 osc.type = 'sine'; osc.frequency.setValueAtTime(523.25, now); osc.frequency.setValueAtTime(659.25, now + 0.1); osc.frequency.setValueAtTime(783.99, now + 0.2);
-                    gainNode.gain.setValueAtTime(0.2, now); gainNode.gain.linearRampToValueAtTime(0.01, now + 0.4);
-    osc.start(now); osc.stop(now + 0.4);
-} else if (type === 'lose') {
-    osc.type = 'sawtooth'; osc.frequency.setValueAtTime(120, now); osc.frequency.linearRampToValueAtTime(40, now + 0.3);
-    gainNode.gain.setValueAtTime(0.3, now); gainNode.gain.linearRampToValueAtTime(0.01, now + 0.3);
-    osc.start(now); osc.stop(now + 0.3);
-} else if (type === 'prestige') {
-    osc.type = 'sine'; osc.frequency.setValueAtTime(200, now); osc.frequency.exponentialRampToValueAtTime(1200, now + 0.5);
-    gainNode.gain.setValueAtTime(0.2, now); gainNode.gain.linearRampToValueAtTime(0.01, now + 0.5);
-    osc.start(now); osc.stop(now + 0.5);
-}
-}
+                gainNode.gain.setValueAtTime(0.2, now); gainNode.gain.linearRampToValueAtTime(0.01, now + 0.4);
+                osc.start(now); osc.stop(now + 0.4);
+            } else if (type === 'lose') {
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(120, now); osc.frequency.linearRampToValueAtTime(40, now + 0.3);
+                gainNode.gain.setValueAtTime(0.3, now); gainNode.gain.linearRampToValueAtTime(0.01, now + 0.3);
+                osc.start(now); osc.stop(now + 0.3);
+            } else if (type === 'prestige') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(200, now); osc.frequency.exponentialRampToValueAtTime(1200, now + 0.5);
+                gainNode.gain.setValueAtTime(0.2, now); gainNode.gain.linearRampToValueAtTime(0.01, now + 0.5);
+                osc.start(now); osc.stop(now + 0.5);
+            }
+        }
 
-const DEFAULT_GAME = {
-    susPoints: 0, basePointsPerClick: 1, baseAutoSusPerSecond: 0, prestigeMultiplier: 1,
-    winPrice: 1000000000, baseWinPrice: 1000000000, cryptoTokens: 0, cryptoPrice: 10, totalLosses: 0,
-    costs: { disguise: 15, vent: 100 }
-};
+        const DEFAULT_GAME = {
+            susPoints: 0, basePointsPerClick: 1, baseAutoSusPerSecond: 0, prestigeMultiplier: 1,
+            winPrice: 1000000000, baseWinPrice: 1000000000, cryptoTokens: 0, cryptoPrice: 10, totalLosses: 0,
+            costs: { disguise: 15, vent: 100 },
+            lastSaved: 0
+        };
 
-let game = { ...DEFAULT_GAME };
-let priceHistory = []; 
+        let game = { ...DEFAULT_GAME };
+        let priceHistory = [];
 
-function loadGame() {
-    let saved = localStorage.getItem('sussy_clicker_save_v4');
-    if (saved) { try { game = Object.assign({}, DEFAULT_GAME, JSON.parse(saved)); } catch(e) {} }
-}
-function saveGame() { localStorage.setItem('sussy_clicker_save_v4', JSON.stringify(game)); }
-function clearSave() { if(confirm("Permanently wipe your meta account?")) { localStorage.removeItem('sussy_clicker_save_v4'); game = JSON.parse(JSON.stringify(DEFAULT_GAME)); updateUI(); } }
+        function loadGame() {
+            let saved = localStorage.getItem('sussy_clicker_save_v4');
+            if (saved) {
+                try {
+                    game = Object.assign({}, DEFAULT_GAME, JSON.parse(saved));
+                    // Offline Math Calculations upon startup
+                    if (game.lastSaved > 0) {
+                        let now = Date.now();
+                        let elapsedMs = now - game.lastSaved;
+                        let elapsedSeconds = Math.floor(elapsedMs / 1000);
+                        let sps = getSPS();
+                        if (elapsedSeconds > 0 && sps > 0) {
+                            let offlineEarnings = elapsedSeconds * sps;
+                            game.susPoints += offlineEarnings;
+                            // Visual feedback alert
+                            setTimeout(() => {
+                                alert(`💰 CODEROT INCOME GENERATED WHILE AWAY!\n\nYou accumulated $${Math.floor(offlineEarnings).toLocaleString()} while touchin' grass for ${elapsedSeconds} seconds.`);
+                                updateUI();
+                            }, 500);
+                        }
+                    }
+                } catch(e) {}
+            }
+        }
 
-function getAuraBonus() {
-    let bonus = 0;
-    if (game.totalLosses >= 1) bonus += 10;
-    if (game.totalLosses >= 5) bonus += 25;
-    return bonus;
-}
+        function saveGame() {
+            game.lastSaved = Date.now();
+            localStorage.setItem('sussy_clicker_save_v4', JSON.stringify(game));
+        }
 
-function getClickPower() { return game.basePointsPerClick * game.prestigeMultiplier * (1 + getAuraBonus()/100); }
-function getSPS() { return game.baseAutoSusPerSecond * game.prestigeMultiplier * (1 + getAuraBonus()/100); }
+        function clearSave() {
+            if(confirm("Permanently wipe your meta account?")) {
+                localStorage.removeItem('sussy_clicker_save_v4');
+                game = JSON.parse(JSON.stringify(DEFAULT_GAME));
+                updateUI();
+            }
+        }
 
-function clickSussy(event) {
-    playSound('click'); let amount = getClickPower(); game.susPoints += amount;
-    let clickerBtn = document.getElementById('main-clicker'); let rect = clickerBtn.getBoundingClientRect();
-    let txt = document.createElement('div'); txt.innerText = `+$${Math.floor(amount).toLocaleString()}`;
-    txt.style.position = 'absolute'; txt.style.color = '#00ff66'; txt.style.fontFamily = 'Impact'; txt.style.fontSize = '24px';
-    txt.style.pointerEvents = 'none'; txt.style.zIndex = '1000'; txt.style.textShadow = '2px 2px #000';
-    txt.style.left = `${rect.left + (rect.width/2) + (Math.random()-0.5)*60}px`; txt.style.top = `${rect.top + window.scrollY}px`;
-    document.body.appendChild(txt);
-    let top = rect.top + window.scrollY; let op = 1;
-    let f = setInterval(() => { top -= 3; op -= 0.05; txt.style.top = `${top}px`; txt.style.opacity = op; if (op <= 0) { clearInterval(f); txt.remove(); } }, 20);
-    updateUI();
-}
+        function getAuraBonus() {
+            let bonus = 0;
+            if (game.totalLosses >= 1) bonus += 10;
+            if (game.totalLosses >= 5) bonus += 25;
+            return bonus;
+        }
 
-function buyDisguise() { if (game.susPoints >= game.costs.disguise) { game.susPoints -= game.costs.disguise; game.basePointsPerClick += 1; game.costs.disguise = Math.ceil(game.costs.disguise * 1.15); playSound('click'); updateUI(); } }
-function buyVent() { if (game.susPoints >= game.costs.vent) { game.susPoints -= game.costs.vent; game.baseAutoSusPerSecond += 5; game.costs.vent = Math.ceil(game.costs.vent * 1.15); playSound('click'); updateUI(); } }
+        function getClickPower() { return game.basePointsPerClick * game.prestigeMultiplier * (1 + getAuraBonus()/100); }
+        function getSPS() { return game.baseAutoSusPerSecond * game.prestigeMultiplier * (1 + getAuraBonus()/100); }
 
-function gambleEverything() {
-    if (game.susPoints <= 0) return;
-    if (Math.random() < 0.5) { game.susPoints *= 2; playSound('win'); alert("🎰 SEED BLESSED! You doubled your money!"); }
-    else { game.susPoints = 0; game.totalLosses++; playSound('lose'); alert("❌ CODEROT STRUCK! You lost your entire bank account!"); }
-    updateUI();
-}
-
-function buyCrypto() { if (game.susPoints >= game.cryptoPrice) { game.susPoints -= game.cryptoPrice; game.cryptoTokens++; playSound('click'); updateUI(); } }
-function sellCrypto() { if (game.cryptoTokens > 0) { game.susPoints += (game.cryptoTokens * game.cryptoPrice); game.cryptoTokens = 0; playSound('win'); updateUI(); } }
-
-function gambleWinCondition() {
-    if (game.susPoints >= game.winPrice) {
-        game.susPoints -= game.winPrice;
-        if (Math.random() < 0.10) { playSound('win'); document.getElementById('win-popup').style.display = 'block'; }
-        else { game.winPrice = Math.ceil(game.winPrice * 1.50); playSound('lose'); alert("❌ BRO GOT SCAMMED! Ticket was blank. Cost escalated!"); }
-        updateUI();
-    }
-}
-
-function prestige() {
-    if (game.susPoints >= 100000) {
-        let gain = Math.floor(Math.log10(game.susPoints) - 4); if (gain < 1) gain = 1;
-        game.prestigeMultiplier += gain; game.baseWinPrice = Math.ceil(game.baseWinPrice * 2.5); game.winPrice = game.baseWinPrice;
-        game.susPoints = 0; game.basePointsPerClick = 1; game.baseAutoSusPerSecond = 0; game.costs.disguise = 15; game.costs.vent = 100; game.cryptoTokens = 0;
-        playSound('prestige'); alert(`🧬 ASCENSION ATTAINED! Income is now ${game.prestigeMultiplier}x!`); updateUI();
-    }
-}
-
-setInterval(() => { let sps = getSPS(); if (sps > 0) { game.susPoints += (sps / 20); updateUI(); } }, 50);
-setInterval(() => { saveGame(); }, 10000);
-
-// Crypto Ticker and Live SVG Chart Mapper Array Loop
-setInterval(() => {
-    let change = (Math.random() - 0.48) * 8;
-    game.cryptoPrice = Math.max(1, Math.ceil(game.cryptoPrice + change));
-    let graphHeightValue = 80 - Math.min(75, Math.max(5, game.cryptoPrice));
-    priceHistory.push(graphHeightValue);
-    if (priceHistory.length > 7) priceHistory.shift();
-    
-    let pointsString = "";
-    for (let i = 0; i < priceHistory.length; i++) {
-        pointsString += `${i * 50},${priceHistory[i]} `;
-    }
-    document.getElementById('chart-line').setAttribute('points', pointsString.trim());
-    updateUI();
-}, 3000);
-
-const slangEncounters = [
-    { text: "🚨 A WILD IMPOSTOR CHALLENGES YOU TO A SKIBIDI COIN FLIP! 🚨", winMsg: "💰 CHIPPED EM! You clutched the coin flip!", loseMsg: "🤡 SKILL ISSUE! He default danced and took your cash!" },
-    { text: "📦 AN ULTRA RARE SUSSY SUPPLY DROP FELL IN THE VENT! 📦", winMsg: "🔥 WE ARE SO BACK! Pulled a Golden Skull Trooper!", loseMsg: "💀 CHALKED! Just a blue spray canister." }
-];
-
-setInterval(() => {
-    if (game.susPoints > 500 && Math.random() < 0.20) {
-        let wager = Math.floor(game.susPoints * 0.30); let s = slangEncounters[Math.floor(Math.random() * slangEncounters.length)];
-        if (confirm(`${s.text}\n\nWager 30% ($${wager.toLocaleString()})?`)) {
-            if (Math.random() < 0.45) { game.susPoints += wager; playSound('win'); alert(s.winMsg); }
-            else { game.susPoints -= wager; if(game.susPoints <= 0) game.totalLosses++; playSound('lose'); alert(s.loseMsg); }
+        function clickSussy(event) {
+            playSound('click'); let amount = getClickPower(); game.susPoints += amount;
+            let clickerBtn = document.getElementById('main-clicker'); let rect = clickerBtn.getBoundingClientRect();
+            let txt = document.createElement('div'); txt.innerText = `+$${Math.floor(amount).toLocaleString()}`;
+            txt.style.position = 'absolute'; txt.style.color = '#00ff66'; txt.style.fontFamily = 'Impact'; txt.style.fontSize = '24px';
+            txt.style.pointerEvents = 'none'; txt.style.zIndex = '1000'; txt.style.textShadow = '2px 2px #000';
+            txt.style.left = `${rect.left + (rect.width/2) + (Math.random()-0.5)*60}px`; txt.style.top = `${rect.top + window.scrollY}px`;
+            document.body.appendChild(txt);
+            let top = rect.top + window.scrollY; let op = 1;
+            let f = setInterval(() => { top -= 3; op -= 0.05; txt.style.top = `${top}px`; txt.style.opacity = op; if (op <= 0) { clearInterval(f); txt.remove(); } }, 20);
             updateUI();
         }
-    }
-}, 15000);
 
-function updateUI() {
-    document.getElementById('sus-points').innerText = Math.floor(game.susPoints).toLocaleString();
-    document.getElementById('sps-display').innerText = Math.floor(getSPS()).toLocaleString();
-    document.getElementById('click-power-display').innerText = getClickPower().toLocaleString();
-    document.getElementById('prestige-display').innerText = game.prestigeMultiplier;
-    document.getElementById('aura-bonus-display').innerText = getAuraBonus();
-    document.getElementById('crypto-price').innerText = game.cryptoPrice.toLocaleString();
-    document.getElementById('crypto-inventory').innerText = game.cryptoTokens.toLocaleString();
-    document.getElementById('stat-losses').innerText = game.totalLosses;
-    document.getElementById('cost-disguise').innerText = game.costs.disguise.toLocaleString();
-    document.getElementById('cost-vent').innerText = game.costs.vent.toLocaleString();
-    document.getElementById('win-cost-display').innerText = game.winPrice.toLocaleString();
-    
-    document.getElementById('btn-disguise').disabled = (game.susPoints < game.costs.disguise);
-    document.getElementById('btn-vent').disabled = (game.susPoints < game.costs.vent);
-    document.getElementById('btn-win').disabled = (game.susPoints < game.winPrice);
-    document.getElementById('btn-gamble').disabled = (game.susPoints <= 0);
-    document.getElementById('btn-buy-crypto').disabled = (game.susPoints < game.cryptoPrice);
-    document.getElementById('btn-sell-crypto').disabled = (game.cryptoTokens <= 0);
-    
-    let b1 = document.getElementById('badge-1'); 
-    if(game.totalLosses >= 1) { b1.innerText = "[X] CODEROT CASUAL (+10%)"; b1.style.color = "#00ff66"; }
-    let b2 = document.getElementById('badge-2'); 
-    if(game.totalLosses >= 5) { b2.innerText = "[X] SKIBIDI DEGEN (+25%)"; b2.style.color = "#00ff66"; }
-    
-    if (game.susPoints >= 100000) {
-        let pending = Math.floor(Math.log10(game.susPoints) - 4);
-        document.getElementById('pending-prestige').innerText = pending < 1 ? 1 : pending;
-        document.getElementById('btn-prestige').disabled = false;
-    } else { 
-        document.getElementById('pending-prestige').innerText = "0"; 
-        document.getElementById('btn-prestige').disabled = true; 
-    }
+        function buyDisguise() { if (game.susPoints >= game.costs.disguise) { game.susPoints -= game.costs.disguise; game.basePointsPerClick += 1; game.costs.disguise = Math.ceil(game.costs.disguise * 1.15); playSound('click'); updateUI(); } }
+        function buyVent() { if (game.susPoints >= game.costs.vent) { game.susPoints -= game.costs.vent; game.baseAutoSusPerSecond += 5; game.costs.vent = Math.ceil(game.costs.vent * 1.15); playSound('click'); updateUI(); } }
 
-    let body = document.body;
-    let statsBox = document.getElementById('box-stats');
-    if (game.susPoints >= 100000000) {
-        body.style.background = "#0c192b";
-        body.style.boxShadow = "inset 0 0 100px rgba(0, 191, 255, 0.4)";
-        statsBox.style.borderColor = "#00bfff";
-    } else if (game.susPoints >= 1000000) {
-        body.style.background = "#1c1605";
-        body.style.boxShadow = "inset 0 0 100px rgba(255, 204, 0, 0.3)";
-        statsBox.style.borderColor = "#ffcc00";
-    } else {
-        body.style.background = "#0f0f12";
-        body.style.boxShadow = "none";
-        statsBox.style.borderColor = "#333";
-    }
-}
+        function gambleEverything() {
+            if (game.susPoints <= 0) return;
+            if (Math.random() < 0.5) { game.susPoints *= 2; playSound('win'); alert("🎰 SEED BLESSED! You doubled your money!"); }
+            else { game.susPoints = 0; game.totalLosses++; playSound('lose'); alert("❌ CODEROT STRUCK! You lost your entire bank account!"); }
+            updateUI();
+        }
 
-loadGame();
-updateUI();
-</script>
+        function buyCrypto() { if (game.susPoints >= game.cryptoPrice) { game.susPoints -= game.cryptoPrice; game.cryptoTokens++; playSound('click'); updateUI(); } }
+        function sellCrypto() { if (game.cryptoTokens > 0) { game.susPoints += (game.cryptoTokens * game.cryptoPrice); game.cryptoTokens = 0; playSound('win'); updateUI(); } }
+
+        function gambleWinCondition() {
+            if (game.susPoints >= game.winPrice) {
+                game.susPoints -= game.winPrice;
+                if (Math.random() < 0.10) { playSound('win'); document.getElementById('win-popup').style.display = 'block'; }
+                else { game.winPrice = Math.ceil(game.winPrice * 1.50); playSound('lose'); alert("❌ BRO GOT SCAMMED! Ticket was blank. Cost escalated!"); }
+                updateUI();
+            }
+        }
+
+        function prestige() {
+            if (game.susPoints >= 100000) {
+                let gain = Math.floor(Math.log10(game.susPoints) - 4); if (gain < 1) gain = 1;
+                game.prestigeMultiplier += gain; game.baseWinPrice = Math.ceil(game.baseWinPrice * 2.5); game.winPrice = game.baseWinPrice;
+                game.susPoints = 0; game.basePointsPerClick = 1; game.baseAutoSusPerSecond = 0; game.costs.disguise = 15; game.costs.vent = 100; game.cryptoTokens = 0;
+                playSound('prestige'); alert(`🧬 ASCENSION ATTAINED! Income is now ${game.prestigeMultiplier}x!`); updateUI();
+            }
+        }
+
+        setInterval(() => { let sps = getSPS(); if (sps > 0) { game.susPoints += (sps / 20); updateUI(); } }, 50);
+        setInterval(() => { saveGame(); }, 10000);
+
+        // Crypto Ticker and Live SVG Chart Loop
+        setInterval(() => {
+            let change = (Math.random() - 0.48) * 8;
+            game.cryptoPrice = Math.max(1, Math.ceil(game.cryptoPrice + change));
+            let graphHeightValue = 80 - Math.min(75, Math.max(5, game.cryptoPrice));
+            priceHistory.push(graphHeightValue);
+            if (priceHistory.length > 7) priceHistory.shift();
+            let pointsString = "";
+            for (let i = 0; i < priceHistory.length; i++) {
+                pointsString += `${i * 50},${priceHistory[i]} `;
+            }
+            let line = document.getElementById('chart-line');
+            if(line) line.setAttribute('points', pointsString.trim());
+            updateUI();
+        }, 3000);
+
+        const slangEncounters = [
+            { text: "🚨 A WILD IMPOSTOR CHALLENGES YOU TO A SKIBIDI COIN FLIP! 🚨", winMsg: "💰 CHIPPED EM! You clutched the coin flip!", loseMsg: "🤡 SKILL ISSUE! He default danced and took your cash!" },
+            { text: "📦 AN ULTRA RARE SUSSY SUPPLY DROP FELL IN THE VENT! 📦", winMsg: "🔥 WE ARE SO BACK! Pulled a Golden Skull Trooper!", loseMsg: "💀 CHALKED! Just a blue spray canister." }
+        ];
+
+        setInterval(() => {
+            if (game.susPoints > 500 && Math.random() < 0.20) {
+                let wager = Math.floor(game.susPoints * 0.30); let s = slangEncounters[Math.floor(Math.random() * slangEncounters.length)];
+                if (confirm(`${s.text}\n\nWager 30% ($${wager.toLocaleString()})?`)) {
+                    if (Math.random() < 0.45) { game.susPoints += wager; playSound('win'); alert(s.winMsg); }
+                    else { game.susPoints -= wager; if(game.susPoints <= 0) game.totalLosses++; playSound('lose'); alert(s.loseMsg); }
+                    updateUI();
+                }
+            }
+        }, 15000);
+
+        function updateUI() {
+            document.getElementById('sus-points').innerText = Math.floor(game.susPoints).toLocaleString();
+            document.getElementById('sps-display').innerText = Math.floor(getSPS()).toLocaleString();
+            document.getElementById('click-power-display').innerText = getClickPower().toLocaleString();
+            document.getElementById('prestige-display').innerText = game.prestigeMultiplier;
+            document.getElementById('aura-bonus-display').innerText = getAuraBonus();
+            document.getElementById('crypto-price').innerText = game.cryptoPrice.toLocaleString();
+                        document.getElementById('crypto-inventory').innerText = game.cryptoTokens.toLocaleString();
+            document.getElementById('stat-losses').innerText = game.totalLosses;
+            document.getElementById('cost-disguise').innerText = game.costs.disguise.toLocaleString();
+            document.getElementById('cost-vent').innerText = game.costs.vent.toLocaleString();
+            document.getElementById('win-cost-display').innerText = game.winPrice.toLocaleString();
+            
+            document.getElementById('btn-disguise').disabled = (game.susPoints < game.costs.disguise);
+            document.getElementById('btn-vent').disabled = (game.susPoints < game.costs.vent);
+            document.getElementById('btn-win').disabled = (game.susPoints < game.winPrice);
+            document.getElementById('btn-gamble').disabled = (game.susPoints <= 0);
+            document.getElementById('btn-buy-crypto').disabled = (game.susPoints < game.cryptoPrice);
+            document.getElementById('btn-sell-crypto').disabled = (game.cryptoTokens <= 0);
+            
+            let b1 = document.getElementById('badge-1');
+            if(game.totalLosses >= 1) { b1.innerText = "[X] CODEROT CASUAL (+10%)"; b1.style.color = "#00ff66"; }
+            let b2 = document.getElementById('badge-2');
+            if(game.totalLosses >= 5) { b2.innerText = "[X] SKIBIDI DEGEN (+25%)"; b2.style.color = "#00ff66"; }
+            
+            if (game.susPoints >= 100000) {
+                let pending = Math.floor(Math.log10(game.susPoints) - 4);
+                document.getElementById('pending-prestige').innerText = pending < 1 ? 1 : pending;
+                document.getElementById('btn-prestige').disabled = false;
+            } else {
+                document.getElementById('pending-prestige').innerText = "0";
+                document.getElementById('btn-prestige').disabled = true;
+            }
+            
+            let body = document.body;
+            let statsBox = document.getElementById('box-stats');
+            if (game.susPoints >= 100000000) {
+                body.style.background = "#0c192b";
+                body.style.boxShadow = "inset 0 0 100px rgba(0, 191, 255, 0.4)";
+                statsBox.style.borderColor = "#00bfff";
+            } else if (game.susPoints >= 1000000) {
+                body.style.background = "#1c1605";
+                body.style.boxShadow = "inset 0 0 100px rgba(255, 204, 0, 0.3)";
+                statsBox.style.borderColor = "#ffcc00";
+            } else {
+                body.style.background = "#0f0f12";
+                body.style.boxShadow = "none";
+                statsBox.style.borderColor = "#333";
+            }
+        }
+
+        window.addEventListener('beforeunload', () => {
+            saveGame();
+        });
+
+                // Register Service Worker for true offline PWA functionality
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Sussy Service Worker Registered!', reg))
+                    .catch(err => console.log('Service Worker setup failed:', err));
+            });
+        }
+
+        loadGame();
+        updateUI();
+    </script>
+</body>
+</html>
