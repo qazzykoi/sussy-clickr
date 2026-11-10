@@ -76,6 +76,27 @@
             transform: translateY(10px);
             box-shadow: 0 5px 0px #550000, 0 10px 10px rgba(0,0,0,0.6);
         }
+        #day-trade-btn {
+            background: #222;
+            color: #00bfff;
+            border: 3px solid #00bfff;
+            padding: 12px 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 10px;
+            transition: all 0.2s ease;
+        }
+        #day-trade-btn:hover {
+            background: #00bfff;
+            color: black;
+            border-color: #fff;
+        }
+        #day-trade-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0px #00bfff, 0 4px 4px rgba(0,0,0,0.6);
+        }
 
         .grid-container {
             display: grid;
@@ -98,7 +119,6 @@
 
         .panel.gamble-panel { border-color: #ffcc00; background: #1c1910; }
         .panel.prestige-panel { border-color: #9933ff; background: #16101c; }
-        .panel.crypto-panel { border-color: #00bfff; background: #0e1724; }
         .panel.achievement-panel { border-color: #ff1493; background: #240e1b; }
 
         .panel h3 { margin: 0 0 10px 0; font-size: 1.4rem; color: #fff; }
@@ -113,8 +133,6 @@
         .action-btn:hover:not(:disabled) { background: #ff3333; color: black; border-color: #fff; }
         .gamble-panel .action-btn:hover:not(:disabled) { background: #ffcc00; }
         .prestige-panel .action-btn:hover:not(:disabled) { background: #9933ff; }
-        .crypto-panel .action-btn:hover:not(:disabled) { background: #00bfff; }
-
         .action-btn:disabled { background: #0b0b0d; color: #444; border-color: #222; cursor: not-allowed; }
 
         .win-screen {
@@ -155,6 +173,7 @@
     </div>
 
     <button id="main-clicker" onclick="clickSussy(event)">GET SUSSY </button>
+    <button id="day-trade-btn" onclick="location.href='trading.html'">📈 Sussy Stock Exchange (SSX)</button>
 
     <div class="grid-container">
         <div class="panel">
@@ -191,24 +210,6 @@
                 <p>Requires $100,000.</p>
             </div>
             <button id="btn-prestige" class="action-btn" onclick="prestige()">Prestige (+<span id="pending-prestige">0</span> Mult)</button>
-        </div>
-
-        <div class="panel crypto-panel">
-            <div>
-                <h3>📈 $SUSCOIN MARKET</h3>
-                <p>Price updates every 3s. Buy low, sell high.</p>
-                <p style="color: #00bfff;">Price: $<span id="crypto-price">10</span></p>
-                <p>Your Bag: <span id="crypto-inventory">0</span> Tokens</p>
-                <div class="chart-box">
-                    <svg id="crypto-svg-chart">
-                        <polyline fill="none" stroke="#00bfff" stroke-width="3" points="0,40 50,40 100,40 150,40 200,40 250,40 300,40" id="chart-line"/>
-                    </svg>
-                </div>
-            </div>
-            <div style="display:flex; gap: 5px; margin-top: 5px;">
-                <button id="btn-buy-crypto" class="action-btn" onclick="buyCrypto()">BUY 1</button>
-                <button id="btn-sell-crypto" class="action-btn" onclick="sellCrypto()">SELL ALL</button>
-            </div>
         </div>
 
         <div class="panel achievement-panel">
@@ -271,7 +272,7 @@
 
         const DEFAULT_GAME = {
             susPoints: 0, basePointsPerClick: 1, baseAutoSusPerSecond: 0, prestigeMultiplier: 1,
-            winPrice: 1000000000, baseWinPrice: 1000000000, cryptoTokens: 0, cryptoPrice: 10, totalLosses: 0,
+            winPrice: 1000000000, baseWinPrice: 1000000000, totalLosses: 0,
             costs: { disguise: 15, vent: 100 },
             lastSaved: 0
         };
@@ -321,6 +322,15 @@
             let bonus = 0;
             if (game.totalLosses >= 1) bonus += 10;
             if (game.totalLosses >= 5) bonus += 25;
+            if (game.totalLosses >= 10) bonus += 50;
+            if (game.totalLosses >= 20) bonus += 100;
+            if (game.totalLosses >= 50) bonus += 200;
+            if (game.totalLosses >= 100) bonus += 500;
+            if (game.totalLosses >= 200) bonus += 1000;
+            if (game.totalLosses >= 500) bonus += 2000;
+            if (game.totalLosses >= 1000) bonus += 5000;
+            if (game.totalLosses >= 2000) bonus += 10000;
+            if (game.totalLosses >= 5000) bonus += 20000;
             return bonus;
         }
 
@@ -345,13 +355,11 @@
 
         function gambleEverything() {
             if (game.susPoints <= 0) return;
-            if (Math.random() < 0.5) { game.susPoints *= 2; playSound('win'); alert("🎰 SEED BLESSED! You doubled your money!"); }
+            if (Math.random() < 0.5) { game.susPoints *= 2; playSound('win'); alert("🎰 SPEED BLESSED! You doubled your money!"); }
             else { game.susPoints = 0; game.totalLosses++; playSound('lose'); alert("❌ CODEROT STRUCK! You lost your entire bank account!"); }
             updateUI();
         }
 
-        function buyCrypto() { if (game.susPoints >= game.cryptoPrice) { game.susPoints -= game.cryptoPrice; game.cryptoTokens++; playSound('click'); updateUI(); } }
-        function sellCrypto() { if (game.cryptoTokens > 0) { game.susPoints += (game.cryptoTokens * game.cryptoPrice); game.cryptoTokens = 0; playSound('win'); updateUI(); } }
 
         function gambleWinCondition() {
             if (game.susPoints >= game.winPrice) {
@@ -366,33 +374,24 @@
             if (game.susPoints >= 100000) {
                 let gain = Math.floor(Math.log10(game.susPoints) - 4); if (gain < 1) gain = 1;
                 game.prestigeMultiplier += gain; game.baseWinPrice = Math.ceil(game.baseWinPrice * 2.5); game.winPrice = game.baseWinPrice;
-                game.susPoints = 0; game.basePointsPerClick = 1; game.baseAutoSusPerSecond = 0; game.costs.disguise = 15; game.costs.vent = 100; game.cryptoTokens = 0;
+                game.susPoints = 0; game.basePointsPerClick = 1; game.baseAutoSusPerSecond = 0; game.costs.disguise = 15; game.costs.vent = 100;
                 playSound('prestige'); alert(`🧬 ASCENSION ATTAINED! Income is now ${game.prestigeMultiplier}x!`); updateUI();
             }
         }
 
         setInterval(() => { let sps = getSPS(); if (sps > 0) { game.susPoints += (sps / 20); updateUI(); } }, 50);
         setInterval(() => { saveGame(); }, 10000);
-
-        // Crypto Ticker and Live SVG Chart Loop
-        setInterval(() => {
-            let change = (Math.random() - 0.48) * 8;
-            game.cryptoPrice = Math.max(1, Math.ceil(game.cryptoPrice + change));
-            let graphHeightValue = 80 - Math.min(75, Math.max(5, game.cryptoPrice));
-            priceHistory.push(graphHeightValue);
-            if (priceHistory.length > 7) priceHistory.shift();
-            let pointsString = "";
-            for (let i = 0; i < priceHistory.length; i++) {
-                pointsString += `${i * 50},${priceHistory[i]} `;
-            }
-            let line = document.getElementById('chart-line');
-            if(line) line.setAttribute('points', pointsString.trim());
-            updateUI();
-        }, 3000);
-
         const slangEncounters = [
             { text: "🚨 A WILD IMPOSTOR CHALLENGES YOU TO A SKIBIDI COIN FLIP! 🚨", winMsg: "💰 CHIPPED EM! You clutched the coin flip!", loseMsg: "🤡 SKILL ISSUE! He default danced and took your cash!" },
-            { text: "📦 AN ULTRA RARE SUSSY SUPPLY DROP FELL IN THE VENT! 📦", winMsg: "🔥 WE ARE SO BACK! Pulled a Golden Skull Trooper!", loseMsg: "💀 CHALKED! Just a blue spray canister." }
+            { text: "📦 AN ULTRA RARE SUSSY SUPPLY DROP FELL IN THE VENT! 📦", winMsg: "🔥 WE ARE SO BACK! Pulled a Golden Skull Trooper!", loseMsg: "💀 CHALKED! Just a blue spray canister." },
+            { text: "🎯 A SKIBIDI SNIPER SQUAD SPOTTED YOU! 🎯", winMsg: "🏆 HEADSHOT! You dodged the bullets and got their loot!", loseMsg: "💥 OOF! They tagged you and took your cash!" },
+            { text: "🕹️ A CODEROT GAMER CHALLENGES YOU TO A 1V1! 🕹️", winMsg: "🎮 GG EZ! You clutched the 1v1 and got their cash!", loseMsg: "😵 LAGGED OUT! They outplayed you and took your cash!" },
+            { text: "💣 A BRAINROT BOMBER DROPS A SUSSY BOMB NEAR YOU! 💣", winMsg: "💥 NINJA DODGE! You avoided the blast and got their loot!", loseMsg: "🔥 INCINERATED! The bomb exploded and took your cash!" },
+            { text: "🛸 A SKIBIDI ALIEN ABDUCTS YOU FOR A SUSSY EXPERIMENT! 🛸", winMsg: "👽 ESCAPED! You outsmarted the aliens and got their loot!", loseMsg: "🛸 ABDUCTED! The aliens took your cash!" },
+            { text: "🎭 A CODEROT CLOWN TRIES TO SCARE YOU! 🎭", winMsg: "😂 JUMP SCARED THEM! You scared the clown and got their loot!", loseMsg: "🤡 SCARED OUT! The clown scared you and took your cash!" },
+            { text: "🕵️ A SKIBIDI DETECTIVE ACCUSES YOU OF BEING SUS! 🕵️", winMsg: "🕵️‍♂️ CLEARED! You proved your innocence and got their loot!", loseMsg: "🔍 FOUND GUILTY! The detective took your cash!" },
+            { text: "🎨 A BRAINROT ARTIST PAINTS A SUSSY MASTERPIECE! 🎨", winMsg: "🖌️ MASTERPIECE! You sold the painting and got their loot!", loseMsg: "🎨 RUINED! The painting was a flop and they took your cash!" },
+            { text: "🏰 A CODEROT KNIGHT CHALLENGES YOU TO A DUEL! 🏰", winMsg: "⚔️ VICTORY! You won the duel and got their loot!", loseMsg: "🛡️ DEFEATED! The knight bested you and took your cash!" },
         ];
 
         setInterval(() => {
@@ -412,19 +411,14 @@
             document.getElementById('click-power-display').innerText = getClickPower().toLocaleString();
             document.getElementById('prestige-display').innerText = game.prestigeMultiplier;
             document.getElementById('aura-bonus-display').innerText = getAuraBonus();
-            document.getElementById('crypto-price').innerText = game.cryptoPrice.toLocaleString();
-                        document.getElementById('crypto-inventory').innerText = game.cryptoTokens.toLocaleString();
             document.getElementById('stat-losses').innerText = game.totalLosses;
             document.getElementById('cost-disguise').innerText = game.costs.disguise.toLocaleString();
             document.getElementById('cost-vent').innerText = game.costs.vent.toLocaleString();
             document.getElementById('win-cost-display').innerText = game.winPrice.toLocaleString();
-            
             document.getElementById('btn-disguise').disabled = (game.susPoints < game.costs.disguise);
             document.getElementById('btn-vent').disabled = (game.susPoints < game.costs.vent);
             document.getElementById('btn-win').disabled = (game.susPoints < game.winPrice);
             document.getElementById('btn-gamble').disabled = (game.susPoints <= 0);
-            document.getElementById('btn-buy-crypto').disabled = (game.susPoints < game.cryptoPrice);
-            document.getElementById('btn-sell-crypto').disabled = (game.cryptoTokens <= 0);
             
             let b1 = document.getElementById('badge-1');
             if(game.totalLosses >= 1) { b1.innerText = "[X] CODEROT CASUAL (+10%)"; b1.style.color = "#00ff66"; }
@@ -491,10 +485,10 @@
     
         // Replace 'susCurrency' with your actual main game currency variable
     localStorage.setItem("playerSusCurrency", susCurrency); 
-}
-
+        }
+    
         loadGame();
         updateUI();
     </script>
 </body>
-</html>
+</html> 
