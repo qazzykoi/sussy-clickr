@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sussy Stock Exchange</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        .back-btn {
+            background: #555;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+        .market-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        .market-card {
+            background: #2a2a2a;
+            border: 2px solid #444;
+            border-radius: 8px;
+            padding: 15px;
+            min-width: 220px;
+        }
+        .market-card button {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            margin: 4px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .market-card button:first-of-type {
+            background: #2ed573;
+        }
+        .trend-up { color: #2ed573; font-weight: bold; }
+        .trend-down { color: #ff4757; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <!-- Back to Main Game -->
+    <a href="index.html" class="back-btn" onclick="saveAndGoBack()">⬅ Back to Clicking</a>
+
+    <h1>📈 Sussy Stock Exchange (SSX)</h1>
+    <h2>Your Balance: <span id="balance-display">0</span> Sus</h2>
+    <p>Market updates every 4 seconds.</p>
+    
+    <div class="market-container">
+        <!-- SusCoin -->
+        <div class="market-card">
+            <h3>SusCoin (SUS)</h3>
+            <p>Price: <span id="suscoin-price">$10.00</span> <span id="suscoin-trend">→ 0%</span></p>
+            <p>Owned: <span id="suscoin-owned">0</span></p>
+            <button onclick="buyAsset('suscoin')">Buy 1</button>
+            <button onclick="sellAsset('suscoin')">Sell 1</button>
+        </div>
+
+        <!-- Skibidi Corp -->
+        <div class="market-card">
+            <h3>Skibidi Corp (SKBD)</h3>
+            <p>Price: <span id="skb-price">$150.00</span> <span id="skb-trend">→ 0%</span></p>
+            <p>Owned: <span id="skb-owned">0</span></p>
+            <button onclick="buyAsset('skb')">Buy 1</button>
+            <button onclick="sellAsset('skb')">Sell 1</button>
+        </div>
+    </div>
+
+    <script>
+        // 1. Pull the player's currency from the main game, default to 100 if none exists
+        let playerCash = parseInt(localStorage.getItem("playerSusCurrency")) || 100;
+
+        // Pull existing stocks or setup defaults
+        let market = JSON.parse(localStorage.getItem("marketData")) || {
+            suscoin: { price: 10, owned: 0, volatility: 0.15 },
+            skb: { price: 150, owned: 0, volatility: 0.25 }
+        };
+
+        // Update the display when the page loads
+        document.getElementById("balance-display").innerText = playerCash;
+        updateMarketUI();
+
+        function buyAsset(id) {
+            let asset = market[id];
+            if (playerCash >= asset.price) {
+                playerCash -= Math.floor(asset.price);
+                asset.owned++;
+                updateMarketUI();
+            } else {
+                alert("Not enough Sus!");
+            }
+        }
+
+        function sellAsset(id) {
+            let asset = market[id];
+            if (asset.owned > 0) {
+                playerCash += Math.floor(asset.price);
+                asset.owned--;
+                updateMarketUI();
+            }
+        }
+
+        function updateMarketPrices() {
+            for (let id in market) {
+                let asset = market[id];
+                let previousPrice = asset.price;
+                let changePercent = (Math.random() * 2 - 1) * asset.volatility;
+                
+                if (Math.random() < 0.05) { changePercent = (Math.random() > 0.5) ? 0.69 : -0.50; }
+                asset.price = Math.max(1, asset.price * (1 + changePercent));
+
+                let priceEl = document.getElementById(`${id}-price`);
+                let trendEl = document.getElementById(`${id}-trend`);
+
+                if (priceEl && trendEl) {
+                    priceEl.innerText = `$${asset.price.toFixed(2)}`;
+                    let actualChange = ((asset.price - previousPrice) / previousPrice) * 100;
+                    if (actualChange > 0) {
+                        trendEl.innerText = `▲ +${actualChange.toFixed(1)}%`;
+                        trendEl.className = "trend-up";
+                    } else {
+                        trendEl.innerText = `▼ ${actualChange.toFixed(1)}%`;
+                        trendEl.className = "trend-down";
+                    }
+                }
+            }
+            // Temporarily save stock amounts and current prices while on this page
+            localStorage.setItem("marketData", JSON.stringify(market));
+        }
+
+        function updateMarketUI() {
+            document.getElementById("balance-display").innerText = playerCash;
+            for (let id in market) {
+                let ownedEl = document.getElementById(`${id}-owned`);
+                if (ownedEl) ownedEl.innerText = market[id].owned;
+            }
+        }
+
+        // Save everything back to localStorage right before heading back to index.html
+        function saveBeforeLeave() {
+            localStorage.setItem("playerSusCurrency", playerCash);
+            localStorage.setItem("marketData", JSON.stringify(market));
+        }
+        // Run this when index.html loads up
+    if (localStorage.getItem("playerSusCurrency")) {
+    susCurrency = parseInt(localStorage.getItem("playerSusCurrency"));
+}
+
+
+        setInterval(updateMarketPrices, 4000);
+    </script>
+</body>
+</html>

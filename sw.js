@@ -2,7 +2,7 @@ const CACHE_NAME = 'sussy-clicker-cache-v1';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
-  './favicon.ico' // Remove or comment out this line if you don't actually have a favicon file yet
+  './favicon.ico'
 ];
 
 // Install Service Worker and cache core game assets

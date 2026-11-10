@@ -217,6 +217,15 @@
                 <p>Bankruptcies: <span id="stat-losses">0</span></p>
                 <p id="badge-1" style="color: #444;"> CODEROT CASUAL (+10% Boost)</p>
                 <p id="badge-2" style="color: #444;"> SKIBIDI DEGEN (+25% Boost)</p>
+                <p id="badge-3" style="color: #444;"> ULTRA BRAINROT (+50% Boost)</p>
+                <p id="badge-4" style="color: #444;"> SUPREME SUSSY (+100% Boost)</p>
+                <p id="badge-5" style="color: #444;"> LEGENDARY IMPOSTOR (+200% Boost)</p>
+                <p id="badge-6" style="color: #444;"> GOD OF SUSSY (+500% Boost)</p>
+                <p id="badge-7" style="color: #444;"> ULTIMATE BRAINROT (+1000% Boost)</p>
+                <p id="badge-8" style="color: #444;"> SUPREME SKIBIDI (+2000% Boost)</p>
+                <p id="badge-9" style="color: #444;"> COSMIC IMPOSTOR (+5000% Boost)</p>
+                <p id="badge-10" style="color: #444;"> TRANSCENDENT SUSSY (+10000% Boost)</p>
+                <p id="badge-11" style="color: #444;"> ULTIMATE BRAINROT (+20000% Boost)</p>
             </div>
         </div>
 
@@ -421,6 +430,24 @@
             if(game.totalLosses >= 1) { b1.innerText = "[X] CODEROT CASUAL (+10%)"; b1.style.color = "#00ff66"; }
             let b2 = document.getElementById('badge-2');
             if(game.totalLosses >= 5) { b2.innerText = "[X] SKIBIDI DEGEN (+25%)"; b2.style.color = "#00ff66"; }
+            let b3 = document.getElementById('badge-3');
+            if(game.totalLosses >= 10) { b3.innerText = "[X] ULTRA BRAINROT (+50%)"; b3.style.color = "#00ff66"; }
+            let b4 = document.getElementById('badge-4');
+            if(game.totalLosses >= 20) { b4.innerText = "[X] SUPREME SUSSY (+100%)"; b4.style.color = "#00ff66"; }
+            let b5 = document.getElementById('badge-5');
+            if(game.totalLosses >= 50) { b5.innerText = "[X] LEGENDARY IMPOSTOR (+200%)"; b5.style.color = "#00ff66"; }
+            let b6 = document.getElementById('badge-6');
+            if(game.totalLosses >= 100) { b6.innerText = "[X] GOD OF SUSSY (+500%)"; b6.style.color = "#00ff66"; }
+            let b7 = document.getElementById('badge-7');
+            if(game.totalLosses >= 200) { b7.innerText = "[X] ULTIMATE BRAINROT (+1000%)"; b7.style.color = "#00ff66"; }
+            let b8 = document.getElementById('badge-8');
+            if(game.totalLosses >= 500) { b8.innerText = "[X] SUPREME SKIBIDI (+2000%)"; b8.style.color = "#00ff66"; }
+            let b9 = document.getElementById('badge-9');
+            if(game.totalLosses >= 1000) { b9.innerText = "[X] COSMIC IMPOSTOR (+5000%)"; b9.style.color = "#00ff66"; }
+            let b10 = document.getElementById('badge-10');
+            if(game.totalLosses >= 2000) { b10.innerText = "[X] TRANSCENDENT SUSSY (+10000%)"; b10.style.color = "#00ff66"; }
+            let b11 = document.getElementById('badge-11');
+            if(game.totalLosses >= 5000) { b11.innerText = "[X] ULTIMATE BRAINROT (+20000%)"; b11.style.color = "#00ff66"; }
             
             if (game.susPoints >= 100000) {
                 let pending = Math.floor(Math.log10(game.susPoints) - 4);
@@ -460,6 +487,11 @@
                     .catch(err => console.log('Service Worker setup failed:', err));
             });
         }
+        function saveBeforeLeave() {
+    
+        // Replace 'susCurrency' with your actual main game currency variable
+    localStorage.setItem("playerSusCurrency", susCurrency); 
+}
 
         loadGame();
         updateUI();
