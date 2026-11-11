@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SUSSY CLICKR</title>
     <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+    <a href="casino.html" style="display: inline-block; padding: 12px 24px; background: #ff4444; color: white; border-radius: 8px; font-weight: bold; text-decoration: none; margin: 15px 0;">
+    🎰 Enter the Sussy Casino 🎰
+</a>
     <style>
         body {
             background-color: #0f0f12;
@@ -486,6 +489,32 @@
         // Replace 'susCurrency' with your actual main game currency variable
     localStorage.setItem("playerSusCurrency", susCurrency); 
         }
+        const CURRENT_VERSION = "2.0"; // Increment this when you change data structures
+
+function loadUserData() {
+    let savedData = JSON.parse(localStorage.getItem("user_website_data"));
+    let savedVersion = localStorage.getItem("data_version");
+
+    if (savedData) {
+        // If they have old data from version 1.0, convert it to fit your new update
+        if (savedVersion !== CURRENT_VERSION) {
+            console.log("Old data version detected. Upgrading...");
+            
+            // Example conversion:
+            if (savedData.oldFieldName) {
+                savedData.newFieldName = savedData.oldFieldName;
+                delete savedData.oldFieldName;
+            }
+            
+            // Save the newly converted data and update their version tracker
+            localStorage.setItem("user_website_data", JSON.stringify(savedData));
+            localStorage.setItem("data_version", CURRENT_VERSION);
+        }
+        return savedData;
+    }
+    return null; // No previous data found
+}
+
     
         loadGame();
         updateUI();
