@@ -7,6 +7,8 @@
     <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
     <a href="casino.html" style="display: inline-block; padding: 12px 24px; background: #ff4444; color: white; border-radius: 8px; font-weight: bold; text-decoration: none; margin: 15px 0;">
     🎰 Enter the Sussy Casino 🎰
+    <script src="data.js"></script>
+
 </a>
     <style>
         body {
@@ -367,8 +369,8 @@
         function gambleWinCondition() {
             if (game.susPoints >= game.winPrice) {
                 game.susPoints -= game.winPrice;
-                if (Math.random() < 0.10) { playSound('win'); document.getElementById('win-popup').style.display = 'block'; }
-                else { game.winPrice = Math.ceil(game.winPrice * 1.50); playSound('lose'); alert("❌ BRO GOT SCAMMED! Ticket was blank. Cost escalated!"); }
+                if (Math.random() > 0.10) { playSound('win'); document.getElementById('win-popup').style.display = 'block'; }
+                else { game.winPrice = Math.ceil(game.winPrice * 1.025); playSound('lose'); alert("❌ BRO GOT SCAMMED! Ticket was blank. Cost escalated!"); }
                 updateUI();
             }
         }
@@ -376,7 +378,7 @@
         function prestige() {
             if (game.susPoints >= 100000) {
                 let gain = Math.floor(Math.log10(game.susPoints) - 4); if (gain < 1) gain = 1;
-                game.prestigeMultiplier += gain; game.baseWinPrice = Math.ceil(game.baseWinPrice * 1.5); game.winPrice = game.baseWinPrice;
+                game.prestigeMultiplier += gain; game.baseWinPrice = Math.ceil(game.baseWinPrice * 1.025); game.winPrice = game.baseWinPrice;
                 game.susPoints = 0; game.basePointsPerClick = 1; game.baseAutoSusPerSecond = 0; game.costs.disguise = 15; game.costs.vent = 100;
                 playSound('prestige'); alert(`🧬 ASCENSION ATTAINED! Income is now ${game.prestigeMultiplier}x!`); updateUI();
             }
@@ -519,5 +521,436 @@ function loadUserData() {
         loadGame();
         updateUI();
     </script>
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sussy Stock Exchange</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        .back-btn {
+            background: #555;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+        .market-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        .market-card {
+            background: #2a2a2a;
+            border: 2px solid #444;
+            border-radius: 8px;
+            padding: 15px;
+            min-width: 220px;
+        }
+        .market-card button {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            margin: 4px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .market-card button:first-of-type {
+            background: #2ed573;
+        }
+        .trend-up { color: #2ed573; font-weight: bold; }
+        .trend-down { color: #ff4757; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <!-- Back to Main Game -->
+    <a href="index.html" class="back-btn" onclick="saveAndGoBack()">⬅ Back to Clicking</a>
+
+    <h1>📈 Sussy Stock Exchange (SSX)</h1>
+    <h2>Your Balance: <span id="balance-display">0</span> Sus</h2>
+    <p>Market updates every 3 seconds.</p>
+    
+    <div class="market-container">
+        <!-- SusCoin -->
+        <div class="market-card">
+            <h3>SusCoin (SUS)</h3>
+            <p>Price: <span id="suscoin-price">$10.00</span> <span id="suscoin-trend">→ 0%</span></p>
+            <p>Owned: <span id="suscoin-owned">0</span></p>
+            <button onclick="buyAsset('suscoin')">Buy 1</button>
+            <button onclick="sellAsset('suscoin')">Sell 1</button>
+        </div>
+
+        <!-- Skibidi Corp -->
+        <div class="market-card">
+            <h3>Skibidi Corp (SKBD)</h3>
+            <p>Price: <span id="skb-price">$150.00</span> <span id="skb-trend">→ 0%</span></p>
+            <p>Owned: <span id="skb-owned">0</span></p>
+            <button onclick="buyAsset('skb')">Buy 1</button>
+            <button onclick="sellAsset('skb')">Sell 1</button>
+        </div>
+    </div>
+
+    <script>
+        // 1. Pull the player's currency from the main game, default to 0 if none exists
+        let playerCash = parseInt(localStorage.getItem("playerSusCurrency")) || 0;
+
+        // Pull existing stocks or setup defaults
+        let market = JSON.parse(localStorage.getItem("marketData")) || {
+            suscoin: { price: 10, owned: 0, volatility: 0.1 },
+            skb: { price: 150, owned: 0, volatility: 0.2 }
+        };
+
+        // Update the display when the page loads
+        document.getElementById("balance-display").innerText = playerCash;
+        updateMarketUI();
+
+        function buyAsset(id) {
+            let asset = market[id];
+            if (playerCash >= asset.price) {
+                playerCash -= Math.floor(asset.price);
+                asset.owned++;
+                updateMarketUI();
+            } else {
+                alert("Not enough Sus!");
+            }
+        }
+
+        function sellAsset(id) {
+            let asset = market[id];
+            if (asset.owned > 0) {
+                playerCash += Math.floor(asset.price);
+                asset.owned--;
+                updateMarketUI();
+            }
+        }
+
+        function updateMarketPrices() {
+            for (let id in market) {
+                let asset = market[id];
+                let previousPrice = asset.price;
+                let changePercent = (Math.random() * 2 - 1) * asset.volatility;
+                
+                if (Math.random() < 0.05) { changePercent = (Math.random() > 0.5) ? 0.69 : -0.50; }
+                asset.price = Math.max(1, asset.price * (1 + changePercent));
+
+                let priceEl = document.getElementById(`${id}-price`);
+                let trendEl = document.getElementById(`${id}-trend`);
+
+                if (priceEl && trendEl) {
+                    priceEl.innerText = `$${asset.price.toFixed(2)}`;
+                    let actualChange = ((asset.price - previousPrice) / previousPrice) * 100;
+                    if (actualChange > 0) {
+                        trendEl.innerText = `▲ +${actualChange.toFixed(1)}%`;
+                        trendEl.className = "trend-up";
+                    } else {
+                        trendEl.innerText = `▼ ${actualChange.toFixed(1)}%`;
+                        trendEl.className = "trend-down";
+                    }
+                }
+            }
+            // Temporarily save stock amounts and current prices while on this page
+            localStorage.setItem("marketData", JSON.stringify(market));
+        }
+
+        function updateMarketUI() {
+            document.getElementById("balance-display").innerText = playerCash;
+            for (let id in market) {
+                let ownedEl = document.getElementById(`${id}-owned`);
+                if (ownedEl) ownedEl.innerText = market[id].owned;
+            }
+        }
+
+        // Save everything back to localStorage right before heading back to index.html
+        function saveBeforeLeave() {
+            localStorage.setItem("playerSusCurrency", playerCash);
+            localStorage.setItem("marketData", JSON.stringify(market));
+        }
+        // Run this when index.html loads up
+    if (localStorage.getItem("playerSusCurrency")) {
+    susCurrency = parseInt(localStorage.getItem("playerSusCurrency"));
+}
+
+
+        setInterval(updateMarketPrices, 3000); // Update market prices every 3 seconds
+    </script>
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎰 Sussy Casino 💀</title>
+    <style>
+        body { background-color: #121212; color: #fff; font-family: 'Courier New', Courier, monospace; text-align: center; margin: 0; padding: 20px; }
+        a { color: #ff4444; font-weight: bold; text-decoration: none; font-size: 1.2rem; }
+        .casino-nav { margin-bottom: 30px; display: flex; justify-content: center; gap: 20px; }
+        .game-card { display: none; background: #1e1e1e; border: 3px solid #ff4444; border-radius: 10px; max-width: 500px; margin: 20px auto; padding: 20px; box-shadow: 0 0 15px rgba(255, 68, 68, 0.4); }
+        .active { display: block; }
+        button { background: #ff4444; color: white; border: none; padding: 10px 20px; font-size: 1rem; cursor: pointer; font-weight: bold; margin: 5px; border-radius: 5px; }
+        button:hover { background: #cc3333; }
+        input { padding: 8px; font-size: 1rem; width: 80px; text-align: center; background: #333; color: #fff; border: 1px solid #555; }
+        .display-box { font-size: 1.5rem; margin: 15px 0; background: #000; padding: 10px; border-radius: 5px; min-height: 40px; display: flex; justify-content: center; align-items: center; }
+    </style>
+</head>
+<body>
+
+    <h1>🎰 WELCOME TO THE SUSSY CASINO 🎰</h1>
+    <p>Your Current Sus: <span id="global-sus">Loading...</span></p>
+    
+    <div class="casino-nav">
+        <a href="index.html">⬅️ Go Back to Clicking</a> |
+        <button onclick="switchGame('plinko')">🟢 Plinko</button>
+        <button onclick="switchGame('blackjack')">🃏 Blackjack</button>
+        <button onclick="switchGame('poker')">🤠 Sussy Poker</button>
+    </div>
+
+    <!-- PLINKO GAME -->
+    <div id="game-plinko" class="game-card active">
+        <h2>🟢 Sussy Plinko</h2>
+        <p>Drop a ball into the peg pyramid! Risk it for a massive multiplier.</p>
+        <label>Bet Amount: </label>
+        <input type="number" id="plinko-bet" value="10" min="1">
+        <br><br>
+        <button onclick="playPlinko()">Drop Ball</button>
+        <div id="plinko-path" class="display-box" style="font-size: 1.1rem; word-break: break-all;">[ Press Drop ]</div>
+        <div id="plinko-result" style="font-weight:bold;"></div>
+    </div>
+
+    <!-- BLACKJACK GAME -->
+    <div id="game-blackjack" class="game-card">
+        <h2>🃏 Sussy Blackjack (21)</h2>
+        <div id="bj-setup">
+            <label>Bet Amount: </label>
+            <input type="number" id="bj-bet" value="10" min="1">
+            <br><br>
+            <button onclick="startBlackjack()">Deal Cards</button>
+        </div>
+        <div id="bj-gameplay" style="display:none;">
+            <p><strong>Dealer Hand:</strong> <span id="bj-dealer-hand">?</span></p>
+            <p><strong>Your Hand:</strong> <span id="bj-player-hand">?</span> (Total: <span id="bj-player-total">0</span>)</p>
+            <button onclick="blackjackAction('hit')">Hit</button>
+            <button onclick="blackjackAction('stand')">Stand</button>
+        </div>
+        <div id="bj-result" class="display-box">Place a bet to play.</div>
+    </div>
+
+    <!-- POKER GAME (HIGH/LOW OR STRIPED) -->
+    <div id="game-poker" class="game-card">
+        <h2>🤠 Sussy Poker (Showdown)</h2>
+        <p>A fast-paced 3-Card Showdown against the Dealer. Best hand wins!</p>
+        <label>Bet Amount: </label>
+        <input type="number" id="poker-bet" value="10" min="1">
+        <br><br>
+        <button onclick="playPoker()">Deal Showdown</button>
+        <div id="poker-board" class="display-box" style="flex-direction: column; font-size:1.1rem;">
+            <div>Dealer: <span id="poker-dealer">---</span></div>
+            <div style="margin-top: 10px;">You: <span id="poker-player">---</span></div>
+        </div>
+        <div id="poker-result" style="font-weight:bold;"></div>
+    </div>
+
+    <script>
+        // --- 1. LOCAL STORAGE SYNC ENGINE ---
+        // Reads your game's data. Automatically falls back if it doesn't find your data structure yet.
+        function getSus() {
+            let data = localStorage.getItem('sussy_clicker_save') || localStorage.getItem('playerData');
+            if (data) {
+                try {
+                    let parsed = JSON.parse(data);
+                    return parsed.sus !== undefined ? parsed.sus : (parsed.points || 100);
+                } catch(e) { return 100; }
+            }
+            return 100; // Fallback starting money
+        }
+
+        function saveSus(newAmount) {
+            // Find your actual key used in your main game file, update it, and broadcast it back
+            let key = localStorage.getItem('sussy_clicker_save') ? 'sussy_clicker_save' : 'playerData';
+            let data = localStorage.getItem(key);
+            let parsed = data ? JSON.parse(data) : {};
+            
+            parsed.sus = newAmount; // Update the currency property
+            if(parsed.points !== undefined) parsed.points = newAmount; 
+
+            localStorage.setItem(key, JSON.stringify(parsed));
+            document.getElementById('global-sus').innerText = newAmount;
+        }
+
+        // Initialize display value on page load
+        document.getElementById('global-sus').innerText = getSus();
+
+        function switchGame(gameId) {
+            document.querySelectorAll('.game-card').forEach(card => card.classList.remove('active'));
+            document.getElementById(`game-${gameId}`).classList.add('active');
+        }
+
+        function validateBet(betAmount) {
+            let currentSus = getSus();
+            if (isNaN(betAmount) || betAmount <= 0) { alert("Enter a valid bet!"); return false; }
+            if (betAmount > currentSus) { alert("You don't have enough Sus!"); return false; }
+            return true;
+        }
+
+        // --- 2. GAME LIBRARIES: PLINKO ---
+        function playPlinko() {
+            let bet = parseInt(document.getElementById('plinko-bet').value);
+            if (!validateBet(bet)) return;
+
+            let currentSus = getSus();
+            currentSus -= bet;
+
+            // Simulate pegs pathing: L = Left, R = Right
+            let path = [];
+            let position = 0; // Center offset tracker
+            for (let i = 0; i < 6; i++) {
+                let choice = Math.random() < 0.5 ? 'L' : 'R';
+                path.push(choice);
+                position += (choice === 'R' ? 1 : -1);
+            }
+
+            // Map destination to point multipliers
+            let absolutePos = Math.abs(position);
+            let multiplier = 0.2; // default center fail
+            if (absolutePos === 2) multiplier = 1.5;
+            if (absolutePos === 4) multiplier = 4.0;
+            if (absolutePos === 6) multiplier = 15.0; // Extreme edges payout high
+
+            let winnings = Math.floor(bet * multiplier);
+            currentSus += winnings;
+            saveSus(currentSus);
+
+            document.getElementById('plinko-path').innerText = `Path: ${path.join(' ➔ ')} (Slot index: ${position})`;
+            let resText = document.getElementById('plinko-result');
+            resText.innerText = `Multiplier: x${multiplier} | Payout: ${winnings} Sus!`;
+            resText.style.color = multiplier >= 1 ? '#00ff00' : '#ff3333';
+        }
+
+        // --- 3. GAME LIBRARIES: BLACKJACK ---
+        let bjState = { deck: [], playerHand: [], dealerHand: [], bet: 0 };
+        
+        function getCard() {
+            const suits = ['♠','♥','♦','♣'];
+            const faces = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+            let face = faces[Math.floor(Math.random() * faces.length)];
+            let val = parseInt(face);
+            if (['J','Q','K'].includes(face)) val = 10;
+            if (face === 'A') val = 11;
+            return { display: face + suits[Math.floor(Math.random()*4)], value: val, isAce: face === 'A' };
+        }
+
+        function calculateScore(hand) {
+            let total = hand.reduce((sum, c) => sum + c.value, 0);
+            let aces = hand.filter(c => c.isAce).length;
+            while (total > 21 && aces > 0) { total -= 10; aces--; }
+            return total;
+        }
+
+        function startBlackjack() {
+            let bet = parseInt(document.getElementById('bj-bet').value);
+            if (!validateBet(bet)) return;
+
+            let currentSus = getSus() - bet;
+            saveSus(currentSus);
+
+            bjState.bet = bet;
+            bjState.playerHand = [getCard(), getCard()];
+            bjState.dealerHand = [getCard(), getCard()];
+
+            document.getElementById('bj-setup').style.display = 'none';
+            document.getElementById('bj-gameplay').style.display = 'block';
+            document.getElementById('bj-result').innerText = "Game in progress...";
+
+            updateBlackjackUI(false);
+        }
+
+        function updateBlackjackUI(showDealer) {
+            document.getElementById('bj-player-hand').innerText = bjState.playerHand.map(c => c.display).join(' ');
+            document.getElementById('bj-player-total').innerText = calculateScore(bjState.playerHand);
+            
+            if (showDealer) {
+                document.getElementById('bj-dealer-hand').innerText = bjState.dealerHand.map(c => c.display).join(' ');
+            } else {
+                document.getElementById('bj-dealer-hand').innerText = bjState.dealerHand[0].display + " 📇";
+            }
+        }
+
+        function blackjackAction(action) {
+            if (action === 'hit') {
+                bjState.playerHand.push(getCard());
+                updateBlackjackUI(false);
+                if (calculateScore(bjState.playerHand) > 21) {
+                    endBlackjack('bust', "You went bust! Dealer wins.");
+                }
+            } else if (action === 'stand') {
+                // Dealer hits until 17
+                while (calculateScore(bjState.dealerHand) < 17) {
+                    bjState.dealerHand.push(getCard());
+                }
+                updateBlackjackUI(true);
+                
+                let pScore = calculateScore(bjState.playerHand);
+                let dScore = calculateScore(bjState.dealerHand);
+
+                if (dScore > 21) endBlackjack('win', "Dealer bust! You win!");
+                else if (pScore > dScore) endBlackjack('win', `You win! ${pScore} beats ${dScore}`);
+                else if (pScore < dScore) endBlackjack('lose', `Dealer wins! ${dScore} beats ${pScore}`);
+                else endBlackjack('push', "It's a push/tie! Bet returned.");
+            }
+        }
+
+        function endBlackjack(outcome, message) {
+            let currentSus = getSus();
+            if (outcome === 'win') currentSus += (bjState.bet * 2);
+            if (outcome === 'push') currentSus += bjState.bet;
+
+            saveSus(currentSus);
+            document.getElementById('bj-result').innerText = message;
+            document.getElementById('bj-setup').style.display = 'block';
+            document.getElementById('bj-gameplay').style.display = 'none';
+        }
+
+        // --- 4. GAME LIBRARIES: SHOWDOWN POKER ---
+        function playPoker() {
+            let bet = parseInt(document.getElementById('poker-bet').value);
+            if (!validateBet(bet)) return;
+
+            let currentSus = getSus() - bet;
+
+            // Generate high-card poker dynamic value arrays
+            let pCard = getCard();
+            let dCard = getCard();
+
+            document.getElementById('poker-player').innerText = pCard.display;
+            document.getElementById('poker-dealer').innerText = dCard.display;
+
+            let resText = document.getElementById('poker-result');
+            if (pCard.value > dCard.value) {
+                currentSus += (bet * 2);
+                resText.innerText = `Winner! Payout: ${bet * 2} Sus!`;
+                resText.style.color = '#00ff00';
+            } else if (pCard.value < dCard.value) {
+                resText.innerText = "Dealer has a better hand. You lost!";
+                resText.style.color = '#ff3333';
+            } else {
+                currentSus += bet;
+                resText.innerText = "Split pot! It's a draw.";
+                resText.style.color = '#ffff00';
+            }
+            saveSus(currentSus);
+        }
+</script>
 </body>
-</html> 
+</html>    
