@@ -59,7 +59,7 @@
 
     <h1>📈 Sussy Stock Exchange (SSX)</h1>
     <h2>Your Balance: <span id="balance-display">0</span> Sus</h2>
-    <p>Market updates every 4 seconds.</p>
+    <p>Market updates every 3 seconds.</p>
     
     <div class="market-container">
         <!-- SusCoin -->
@@ -82,13 +82,13 @@
     </div>
 
     <script>
-        // 1. Pull the player's currency from the main game, default to 100 if none exists
-        let playerCash = parseInt(localStorage.getItem("playerSusCurrency")) || 100;
+        // 1. Pull the player's currency from the main game, default to 0 if none exists
+        let playerCash = parseInt(localStorage.getItem("playerSusCurrency")) || 0;
 
         // Pull existing stocks or setup defaults
         let market = JSON.parse(localStorage.getItem("marketData")) || {
-            suscoin: { price: 10, owned: 0, volatility: 0.15 },
-            skb: { price: 150, owned: 0, volatility: 0.25 }
+            suscoin: { price: 10, owned: 0, volatility: 0.1 },
+            skb: { price: 150, owned: 0, volatility: 0.2 }
         };
 
         // Update the display when the page loads
@@ -162,7 +162,7 @@
 }
 
 
-        setInterval(updateMarketPrices, 4000);
+        setInterval(updateMarketPrices, 3000); // Update market prices every 3 seconds
     </script>
 </body>
 </html>

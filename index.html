@@ -373,7 +373,7 @@
         function prestige() {
             if (game.susPoints >= 100000) {
                 let gain = Math.floor(Math.log10(game.susPoints) - 4); if (gain < 1) gain = 1;
-                game.prestigeMultiplier += gain; game.baseWinPrice = Math.ceil(game.baseWinPrice * 2.5); game.winPrice = game.baseWinPrice;
+                game.prestigeMultiplier += gain; game.baseWinPrice = Math.ceil(game.baseWinPrice * 1.5); game.winPrice = game.baseWinPrice;
                 game.susPoints = 0; game.basePointsPerClick = 1; game.baseAutoSusPerSecond = 0; game.costs.disguise = 15; game.costs.vent = 100;
                 playSound('prestige'); alert(`🧬 ASCENSION ATTAINED! Income is now ${game.prestigeMultiplier}x!`); updateUI();
             }
@@ -395,9 +395,9 @@
         ];
 
         setInterval(() => {
-            if (game.susPoints > 500 && Math.random() < 0.20) {
-                let wager = Math.floor(game.susPoints * 0.30); let s = slangEncounters[Math.floor(Math.random() * slangEncounters.length)];
-                if (confirm(`${s.text}\n\nWager 30% ($${wager.toLocaleString()})?`)) {
+            if (game.susPoints > 500 && Math.random() < 0.25) {
+                let wager = Math.floor(game.susPoints * 0.25); let s = slangEncounters[Math.floor(Math.random() * slangEncounters.length)];
+                if (confirm(`${s.text}\n\nWager 25% ($${wager.toLocaleString()})?`)) {
                     if (Math.random() < 0.45) { game.susPoints += wager; playSound('win'); alert(s.winMsg); }
                     else { game.susPoints -= wager; if(game.susPoints <= 0) game.totalLosses++; playSound('lose'); alert(s.loseMsg); }
                     updateUI();
