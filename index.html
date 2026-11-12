@@ -473,6 +473,52 @@
                 statsBox.style.borderColor = "#333";
             }
         }
+        const RELIC_POOL = [
+  { id: 'mewing', name: '🤫 Mewing Streak', desc: '2x Click Power, 0.5x SPS' },
+  { id: 'insider', name: '📈 Pelosi Insider', desc: '+25% Stock Sell Value in SSX' },
+  { id: 'luck', name: '🍀 Rigged RNG', desc: '1.5x Payout on Casino Wins' },
+  { id: 'diamond', name: '💎 Diamond Hands', desc: 'Keep 10% cash on Double-or-Coderot loss' }
+];
+
+function toggleRelic(id) {
+  const idx = game.equippedRelics.indexOf(id);
+  if (idx > -1) {
+    game.equippedRelics.splice(idx, 1);
+  } else if (game.equippedRelics.length < 2) {
+    game.equippedRelics.push(id);
+  } else {
+    alert("Max 2 Relics equipped! Unequip one first.");
+  }
+  saveSharedGame();
+  if (typeof updateUI === 'function') updateUI();
+}
+
+const HARDWARE_TYPES = {
+  gpu: { name: 'GPU Miner', cost: 5000, baseSps: 2500, icon: '🖥️' },
+  fan: { name: 'RGB Fan', cost: 7500, baseSps: 3000, icon: '❄️' },
+  router: { name: '5G Router', cost: 12000, baseSps: 10000, icon: '📡' }
+};
+
+function getServerGridSPS() {
+  let total = 0;
+  const neighbors = [-3, 3, -1, 1];
+  for (let i = 0; i < 9; i++) {
+    const item = game.serverGrid[i];
+    if (!item) continue;
+    let mult = 1;
+    for (const offset of neighbors) {
+      const nIdx = i + offset;
+      // Prevent row-wrapping on left/right edges
+      if (offset === -1 && i % 3 === 0) continue;
+      if (offset === 1 && i % 3 === 2) continue;
+      const neighbor = game.serverGrid[nIdx];
+      if (item === 'gpu' && neighbor === 'fan') mult += 1.0;
+      if (item === 'gpu' && neighbor === 'router') mult += 0.5;
+    }
+    total += HARDWARE_TYPES[item].baseSps * mult;
+  }
+  return total;
+}
 
         window.addEventListener('beforeunload', () => {
             saveGame();

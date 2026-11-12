@@ -37,3 +37,49 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+const CACHE_NAME = 'sussy-clicker-cache-v2'; // Bump this number when you update!
+const ASSETS_TO_CACHE = [
+  './',
+  './index.html',
+  './casino.html',
+  './stocks.html',
+  './data.js',
+  './favicon.ico'
+];
+
+self.addEventListener('install', (event) => {
+  self.skipWaiting(); // Forces the new service worker to take over immediately
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE))
+  );
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cache) => {
+          if (cache !== CACHE_NAME) {
+            return caches.delete(cache); // Deletes old cached versions
+          }
+        })
+      );
+    }).then(() => self.clients.claim()) // Immediately updates open tabs
+  );
+});
+
+// NETWORK-FIRST: Always tries to download your newest GitHub update first
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    fetch(event.request)
+      .then((networkResponse) => {
+        // Save the fresh copy to cache for offline use
+        const responseClone = networkResponse.clone();
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, responseClone);
+        });
+        return networkResponse;
+      })
+      .catch(() => caches.match(event.request)) // Offline fallback
+  );
+});

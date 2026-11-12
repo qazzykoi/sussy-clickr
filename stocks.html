@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sussy Stock Exchange</title>
+        <script src="data.js"></script>
+
     <style>
         body {
             background-color: #121212;
@@ -94,9 +96,11 @@
 
         // Pull existing stocks or setup defaults
         let market = JSON.parse(localStorage.getItem("marketData")) || {
-            suscoin: { price: 10, owned: 0, volatility: 0.1 },
-            skb: { price: 150, owned: 0, volatility: 0.2 }
-        };
+        suscoin: { price: 10, owned: 0, volatility: 0.1 },
+        skb: { price: 150, owned: 0, volatility: 0.2 },
+        crg: { price: 500, owned: 0, volatility: 0.35 }
+};
+
 
         // Update the display when the page loads
         document.getElementById("balance-display").innerText = playerCash;
@@ -166,6 +170,17 @@
         // Run this when index.html loads up
     if (localStorage.getItem("playerSusCurrency")) {
     susCurrency = parseInt(localStorage.getItem("playerSusCurrency"));
+}
+// Use this in both stocks.html and casino.html (after loading data.js)
+function getSus() {
+  return Math.floor(game.susPoints);
+}
+
+function saveSus(newAmount) {
+  game.susPoints = Math.max(0, newAmount);
+  saveSharedGame();
+  const el = document.getElementById('global-sus') || document.getElementById('balance-display');
+  if (el) el.innerText = game.susPoints.toLocaleString();
 }
 
 

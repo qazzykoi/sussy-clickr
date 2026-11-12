@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="data.js"></script>
     <title>🎰 Sussy Casino 💀</title>
     <style>
         body { background-color: #121212; color: #fff; font-family: 'Courier New', Courier, monospace; text-align: center; margin: 0; padding: 20px; }
@@ -262,6 +263,18 @@
             }
             saveSus(currentSus);
         }
+        // Use this in both stocks.html and casino.html (after loading data.js)
+function getSus() {
+  return Math.floor(game.susPoints);
+}
+
+function saveSus(newAmount) {
+  game.susPoints = Math.max(0, newAmount);
+  saveSharedGame();
+  const el = document.getElementById('global-sus') || document.getElementById('balance-display');
+  if (el) el.innerText = game.susPoints.toLocaleString();
+}
+
 </script>
 </body>
 </html>

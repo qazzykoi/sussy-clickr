@@ -1,41 +1,68 @@
-const CURRENT_VERSION = 2; // Increment this whenever you change data structures
+const SAVE_KEY = 'sussy_clicker_save_v5';
 
-function initializeAndMigrateData() {
-    // 1. Check if they are a completely new user
-    if (!localStorage.getItem('game_data')) {
-        const defaultData = {
-            version: CURRENT_VERSION,
-            score: 0,
-            inventory: [], // New feature added in version 2
-            unlockedLevels: [1]
-        };
-        localStorage.setItem('game_data', JSON.stringify(defaultData));
-        console.log("New user data initialized.");
-        return defaultData;
-    }
+const DEFAULT_GAME = {
+  susPoints: 0,
+  basePointsPerClick: 1,
+  baseAutoSusPerSecond: 0,
+  prestigeMultiplier: 1,
+  winPrice: 1000000000,
+  baseWinPrice: 1000000000,
+  totalLosses: 0,
+  costs: { disguise: 15, vent: 100 },
+  equippedRelics: [], // Up to 2 active relics across all pages
+  serverGrid: Array(9).fill(null), // 3x3 synergy grid
+  activeChallenge: null,
+  completedChallenges: [],
+  lastSaved: 0
+};
 
-    // 2. Fetch existing user data
-    let userData = JSON.parse(localStorage.getItem('game_data'));
+let game = loadSharedGame();
 
-    // 3. Automatically upgrade existing users if their data is outdated
-    if (!userData.version || userData.version < CURRENT_VERSION) {
-        console.log("Outdated data found. Migrating...");
-
-        // Migrate from Version 1 to Version 2
-        if (userData.version === 1 || !userData.version) {
-            // Safely inject new properties without deleting their old score
-            userData.inventory = []; 
-            userData.unlockedLevels = userData.unlockedLevels || [1];
-            userData.version = 2; // Upgrade version tracker
-        }
-
-        // Save the newly migrated data back to localStorage
-        localStorage.setItem('game_data', JSON.stringify(userData));
-        console.log("Data successfully migrated to Version " + CURRENT_VERSION);
-    }
-
-    return userData;
+function loadSharedGame() {
+  // Migrate from v4 if present
+  const raw = localStorage.getItem(SAVE_KEY) || localStorage.getItem('sussy_clicker_save_v4');
+  if (!raw) return JSON.parse(JSON.stringify(DEFAULT_GAME));
+  try {
+    return Object.assign(JSON.parse(JSON.stringify(DEFAULT_GAME)), JSON.parse(raw));
+  } catch (e) {
+    return JSON.parse(JSON.stringify(DEFAULT_GAME));
+  }
 }
 
-// Run this as soon as the page loads
-const gameData = initializeAndMigrateData();
+function saveSharedGame() {
+  game.lastSaved = Date.now();
+  localStorage.setItem(SAVE_KEY, JSON.stringify(game));
+}
+
+function hasRelic(id) {
+  return game.equippedRelics && game.equippedRelics.includes(id);
+}
+function deepMergeDefaults(defaults, saved) {
+  const result = { ...defaults };
+  for (const key in defaults) {
+    if (saved && saved[key] !== undefined) {
+      // If both are plain objects (like game.costs), merge inside them too
+      if (
+        typeof defaults[key] === 'object' &&
+        defaults[key] !== null &&
+        !Array.isArray(defaults[key])
+      ) {
+        result[key] = deepMergeDefaults(defaults[key], saved[key]);
+      } else {
+        result[key] = saved[key];
+      }
+    }
+  }
+  return result;
+}
+
+function loadSharedGame() {
+  const raw = localStorage.getItem(SAVE_KEY) || localStorage.getItem('sussy_clicker_save_v4');
+  if (!raw) return JSON.parse(JSON.stringify(DEFAULT_GAME));
+  try {
+    const parsed = JSON.parse(raw);
+    return deepMergeDefaults(DEFAULT_GAME, parsed);
+  } catch (e) {
+    return JSON.parse(JSON.stringify(DEFAULT_GAME));
+  }
+}
