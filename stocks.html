@@ -1,188 +1,581 @@
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sussy Stock Exchange</title>
-        <script src="data.js"></script>
-
+    <meta name="theme-color" content="#160c2a">
+    <title>Sussy Exchange | Paper Trading</title>
+    <script src="data.js"></script>
     <style>
+        :root {
+            color-scheme: dark;
+            --page: #090d14;
+            --panel: #111823;
+            --panel-raised: #151e2b;
+            --border: #222d3b;
+            --muted: #8290a3;
+            --text: #e8edf5;
+            --green: #27d79a;
+            --red: #ff657a;
+            --blue: #6ea8fe;
+        }
+
+        * { box-sizing: border-box; }
+
         body {
-            background-color: #121212;
-            color: white;
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 20px;
+            margin: 0;
+            background: var(--page);
+            color: var(--text);
+            font: 14px/1.5 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         }
-        .back-btn {
-            background: #555;
-            color: white;
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 5px;
-            display: inline-block;
-            margin-bottom: 20px;
-        }
-        .market-container {
+
+        button, input { font: inherit; }
+        button { cursor: pointer; }
+
+        .topbar {
+            min-height: 66px;
             display: flex;
+            align-items: center;
+            justify-content: space-between;
             gap: 20px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 15px;
+            padding: 0 max(24px, calc((100vw - 1380px) / 2));
+            border-bottom: 1px solid var(--border);
+            background: #0c121b;
         }
-        .market-card {
-            background: #2a2a2a;
-            border: 2px solid #444;
-            border-radius: 8px;
-            padding: 15px;
-            min-width: 220px;
+
+        .brand, .topbar-right, .nav-links, .market-state, .asset-heading, .price-line, .panel-heading, .trade-actions {
+            display: flex;
+            align-items: center;
         }
-        .market-card button {
-            background: #ff4757;
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            margin: 4px;
-            cursor: pointer;
-            border-radius: 4px;
-            font-weight: bold;
+
+        .brand { gap: 11px; color: var(--text); font-weight: 750; letter-spacing: .02em; }
+        .brand-mark {
+            width: 34px;
+            height: 34px;
+            display: grid;
+            place-items: center;
+            border: 1px solid #335478;
+            border-radius: 10px;
+            background: #14243a;
+            color: var(--blue);
+            font-size: 19px;
         }
-        .market-card button:first-of-type {
-            background: #2ed573;
+
+        .brand small { display: block; color: var(--muted); font-size: 10px; font-weight: 600; letter-spacing: .13em; }
+        .topbar-right { gap: 24px; }
+        .nav-links { gap: 20px; }
+        .nav-links a { color: var(--muted); text-decoration: none; }
+        .nav-links a:hover, .nav-links a[aria-current="page"] { color: var(--text); }
+        .market-state { gap: 8px; color: #b6c1cf; font-size: 12px; }
+        .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 12px #27d79a88; }
+
+        main { width: min(1380px, calc(100% - 48px)); margin: 30px auto 60px; }
+        .page-heading { display: flex; align-items: end; justify-content: space-between; gap: 18px; margin-bottom: 22px; }
+        .eyebrow { margin: 0 0 4px; color: var(--blue); font-size: 11px; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+        h1, h2, h3, p { margin-top: 0; }
+        h1 { margin-bottom: 3px; font-size: clamp(24px, 3vw, 32px); letter-spacing: -.04em; }
+        .page-heading p:last-child { margin-bottom: 0; color: var(--muted); }
+        .sim-badge { padding: 7px 11px; border: 1px solid #34445a; border-radius: 999px; color: #b8c5d6; font-size: 11px; white-space: nowrap; }
+
+        .overview { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 18px; }
+        .stat-card, .panel { border: 1px solid var(--border); border-radius: 12px; background: var(--panel); }
+        .stat-card { min-height: 100px; padding: 16px 18px; }
+        .stat-label { display: block; margin-bottom: 9px; color: var(--muted); font-size: 12px; }
+        .stat-value { display: block; overflow: hidden; font-size: clamp(18px, 2vw, 23px); font-weight: 700; letter-spacing: -.03em; text-overflow: ellipsis; white-space: nowrap; }
+        .stat-sub { display: block; margin-top: 2px; color: var(--muted); font-size: 11px; }
+
+        .workspace { display: grid; grid-template-columns: minmax(0, 1fr) 315px; gap: 18px; margin-bottom: 18px; }
+        .panel { min-width: 0; }
+        .chart-panel { padding: 20px 22px 14px; }
+        .asset-heading { justify-content: space-between; gap: 16px; }
+        .asset-title { display: flex; align-items: center; gap: 12px; min-width: 0; }
+        .asset-icon { display: grid; width: 42px; height: 42px; flex: 0 0 auto; place-items: center; border: 1px solid #30435b; border-radius: 12px; background: #18263a; color: var(--blue); font-size: 12px; font-weight: 800; }
+        .asset-title h2 { overflow: hidden; margin: 0; font-size: 16px; text-overflow: ellipsis; white-space: nowrap; }
+        .asset-title p { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
+        .price-summary { text-align: right; white-space: nowrap; }
+        .price-summary strong { display: block; font-size: clamp(20px, 2.6vw, 29px); letter-spacing: -.04em; }
+        .change-chip { display: inline-block; font-size: 12px; font-weight: 700; }
+        .positive { color: var(--green) !important; }
+        .negative { color: var(--red) !important; }
+        .chart-meta { display: flex; justify-content: space-between; gap: 10px; margin: 22px 0 8px; color: var(--muted); font-size: 11px; }
+        .chart-wrap { height: 230px; overflow: hidden; border-radius: 8px; background: linear-gradient(180deg, #101a26 0%, #111823 100%); }
+        #price-chart { display: block; width: 100%; height: 100%; }
+        .chart-grid { stroke: #243142; stroke-width: 1; }
+        .chart-line { fill: none; stroke: var(--green); stroke-linecap: round; stroke-linejoin: round; stroke-width: 2.5; }
+        .chart-area { fill: url(#chart-fill); }
+        .chart-panel.down .chart-line { stroke: var(--red); }
+        .chart-panel.down .chart-area { fill: url(#chart-fill-down); }
+        .chart-baseline { display: flex; justify-content: space-between; padding-top: 8px; color: var(--muted); font-size: 10px; }
+
+        .ticket { padding: 20px; }
+        .panel-heading { justify-content: space-between; gap: 12px; margin-bottom: 17px; }
+        .panel-heading h2 { margin: 0; font-size: 15px; }
+        .panel-kicker { color: var(--muted); font-size: 11px; }
+        .selected-order { margin-bottom: 16px; padding: 12px; border: 1px solid var(--border); border-radius: 9px; background: var(--panel-raised); }
+        .selected-order span { display: block; color: var(--muted); font-size: 11px; }
+        .selected-order strong { font-size: 14px; }
+        .field-label { display: block; margin-bottom: 7px; color: #bbc6d4; font-size: 12px; font-weight: 650; }
+        .quantity-control { display: flex; align-items: center; border: 1px solid #354254; border-radius: 8px; background: #0c121b; }
+        .quantity-control input { width: 100%; min-width: 0; padding: 10px 12px; border: 0; outline: 0; background: transparent; color: var(--text); }
+        .quantity-control input:focus { box-shadow: 0 0 0 2px #6ea8fe66; }
+        .quantity-control span { padding-right: 12px; color: var(--muted); font-size: 11px; }
+        .order-estimate { display: flex; justify-content: space-between; gap: 10px; margin: 13px 0 17px; color: var(--muted); font-size: 12px; }
+        .order-estimate strong { color: var(--text); }
+        .trade-actions { gap: 9px; }
+        .trade-actions button { min-height: 42px; flex: 1; border: 0; border-radius: 8px; color: #07130f; font-weight: 750; }
+        .buy-button { background: var(--green); }
+        .sell-button { background: #ff7184; }
+        .trade-actions button:hover { filter: brightness(1.08); }
+        .trade-actions button:active { transform: translateY(1px); }
+        .trade-message { min-height: 35px; margin: 12px 0 0; color: var(--muted); font-size: 11px; }
+        .trade-message.success { color: var(--green); }
+        .trade-message.error { color: var(--red); }
+        .ticket-note { margin: 13px 0 0; padding-top: 12px; border-top: 1px solid var(--border); color: var(--muted); font-size: 10px; }
+
+        .watchlist { overflow: hidden; }
+        .watchlist .panel-heading { margin: 0; padding: 18px 20px; border-bottom: 1px solid var(--border); }
+        .watchlist .panel-heading p { margin: 3px 0 0; color: var(--muted); font-size: 11px; }
+        .table-scroll { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; white-space: nowrap; }
+        th { padding: 11px 16px; color: var(--muted); font-size: 10px; font-weight: 650; letter-spacing: .07em; text-transform: uppercase; }
+        td { padding: 11px 16px; border-top: 1px solid #1c2633; font-size: 12px; }
+        tbody tr { transition: background .15s ease; }
+        tbody tr:hover, tbody tr.selected { background: #172131; }
+        tbody tr { cursor: pointer; }
+        .symbol-cell { display: flex; align-items: center; gap: 10px; }
+        .symbol-icon { display: grid; width: 30px; height: 30px; flex: 0 0 auto; place-items: center; border-radius: 9px; background: #1b2b40; color: #b8d2ff; font-size: 9px; font-weight: 800; }
+        .symbol-name strong, .symbol-name span { display: block; }
+        .symbol-name strong { font-size: 12px; }
+        .symbol-name span { color: var(--muted); font-size: 10px; }
+        .row-action { padding: 5px 9px; border: 1px solid #344254; border-radius: 6px; background: #182230; color: #dce5f0; font-size: 10px; font-weight: 650; }
+        .row-action:hover { border-color: #6ea8fe; }
+        footer { padding-top: 15px; color: #657387; font-size: 10px; text-align: center; }
+
+        @media (max-width: 900px) {
+            .workspace { grid-template-columns: minmax(0, 1fr) 280px; gap: 12px; }
+            .chart-panel { padding-inline: 16px; }
+            .ticket { padding: 16px; }
+            .overview { gap: 10px; }
         }
-        .trend-up { color: #2ed573; font-weight: bold; }
-        .trend-down { color: #ff4757; font-weight: bold; }
+
+        @media (max-width: 700px) {
+            .topbar { padding: 0 18px; }
+            .topbar-right { gap: 12px; }
+            .nav-links { gap: 12px; }
+            .nav-links a:first-child { display: none; }
+            main { width: min(100% - 28px, 600px); margin-top: 22px; }
+            .overview { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .workspace { grid-template-columns: 1fr; }
+            .ticket { order: -1; }
+            .chart-wrap { height: 200px; }
+        }
+
+        @media (max-width: 430px) {
+            .market-state { display: none; }
+            .page-heading { align-items: start; flex-direction: column; }
+            .asset-heading { align-items: start; flex-direction: column; }
+            .price-summary { text-align: left; }
+            .chart-panel { padding: 16px 13px 12px; }
+            th, td { padding-inline: 11px; }
+        }
     </style>
+    <link rel="stylesheet" href="brainrot-theme.css">
 </head>
 <body>
-
-    <!-- Back to Main Game -->
-    <a href="index.html" class="back-btn" onclick="saveAndGoBack()">⬅ Back to Clicking</a>
-
-    <h1>📈 Sussy Stock Exchange (SSX)</h1>
-    <h2>Your Balance: <span id="balance-display">0</span> Sus</h2>
-    <p>Market updates every 3 seconds.</p>
-    
-    <div class="market-container">
-        <!-- SusCoin -->
-        <div class="market-card">
-            <h3>SusCoin (SUS)</h3>
-            <p>Price: <span id="suscoin-price">$10.00</span> <span id="suscoin-trend">→ 0%</span></p>
-            <p>Owned: <span id="suscoin-owned">0</span></p>
-            <button onclick="buyAsset('suscoin')">Buy 1</button>
-            <button onclick="sellAsset('suscoin')">Sell 1</button>
+    <header class="topbar">
+        <a class="brand" href="stocks.html" style="text-decoration:none">
+            <span class="brand-mark">ඞ</span>
+            <span>SUSSY WORLD<small>STONKS & SCAMS</small></span>
+        </a>
+        <div class="topbar-right">
+            <nav class="nav-links" aria-label="Main navigation">
+                <a href="stocks.html" aria-current="page">Markets</a>
+                <a href="index.html">Clicker</a>
+                <a href="casino.html">Casino</a>
+            </nav>
+            <div class="market-state"><span class="live-dot"></span> Stonks are doing stuff</div>
         </div>
+    </header>
 
-        <!-- Skibidi Corp -->
-        <div class="market-card">
-            <h3>Skibidi Corp (SKBD)</h3>
-            <p>Price: <span id="skb-price">$150.00</span> <span id="skb-trend">→ 0%</span></p>
-            <p>Owned: <span id="skb-owned">0</span></p>
-            <button onclick="buyAsset('skb')">Buy 1</button>
-            <button onclick="sellAsset('skb')">Sell 1</button>
-        </div>
-    </div>
-    <!--Codrot Games-->
-    <div class="market-card">
-        <h3> Codrot Games (CRG)</h3>
-        <p>Price: <span id="skb-price">$150.00</span> <span id="skb-trend">→ 0%</span></p>
-            <p>Owned: <span id="skb-owned">0</span></p>
-            <button onclick="buyAsset('skb')">Buy 1</button>
-            <button onclick="sellAsset('skb')">Sell 1</button>
-        </div>
+    <main>
+        <section class="page-heading">
+            <div>
+                <p class="eyebrow">The sus stock pit</p>
+                <h1>Buy low. Sell sus.</h1>
+                <p>Make moves, watch the numbers go brrr, try not to panic.</p>
+            </div>
+            <span class="sim-badge">🎮 Fake money · Market chaos every 3 seconds</span>
+        </section>
+
+        <section class="overview" aria-label="Portfolio overview">
+            <article class="stat-card">
+                <span class="stat-label">Pocket Sus</span>
+                <strong class="stat-value" id="balance-display">SUS 0</strong>
+                <span class="stat-sub">Your spendable braincells</span>
+            </article>
+            <article class="stat-card">
+                <span class="stat-label">Sus in stonks</span>
+                <strong class="stat-value" id="portfolio-value">SUS 0</strong>
+                <span class="stat-sub">Bag value (don't ask)</span>
+            </article>
+            <article class="stat-card">
+                <span class="stat-label">Goblin net worth</span>
+                <strong class="stat-value" id="account-value">SUS 0</strong>
+                <span class="stat-sub">Everything you own-ish</span>
+            </article>
+            <article class="stat-card">
+                <span class="stat-label">Today's chaos</span>
+                <strong class="stat-value" id="daily-change">SUS 0</strong>
+                <span class="stat-sub">Unrealized portfolio movement</span>
+            </article>
+        </section>
+
+        <section class="workspace">
+            <article class="panel chart-panel" id="chart-panel">
+                <div class="asset-heading">
+                    <div class="asset-title">
+                        <span class="asset-icon" id="selected-icon">SUS</span>
+                        <div>
+                            <h2 id="selected-name">SusCoin</h2>
+                            <p id="selected-symbol">SUS · Simulated asset</p>
+                        </div>
+                    </div>
+                    <div class="price-summary">
+                        <strong id="selected-price">SUS 0.00</strong>
+                        <span class="change-chip" id="selected-change">0.00%</span>
+                    </div>
+                </div>
+                <div class="chart-meta">
+                    <span>INTRADAY PRICE</span>
+                    <span id="chart-range">Last 30 market updates</span>
+                </div>
+                <div class="chart-wrap">
+                    <svg id="price-chart" viewBox="0 0 760 230" role="img" aria-label="Selected asset intraday price chart" preserveAspectRatio="none"></svg>
+                </div>
+                <div class="chart-baseline"><span>Earlier</span><span>Live</span></div>
+            </article>
+
+            <aside class="panel ticket" aria-labelledby="ticket-heading">
+                <div class="panel-heading">
+                    <h2 id="ticket-heading">Make a move</h2>
+                    <span class="panel-kicker">YOLO BUTTONS</span>
+                </div>
+                <div class="selected-order">
+                    <span>You're gambling on</span>
+                    <strong id="ticket-asset">SusCoin (SUS)</strong>
+                </div>
+                <label class="field-label" for="order-quantity">How many stonks?</label>
+                <div class="quantity-control">
+                    <input id="order-quantity" type="number" min="1" step="1" value="1" inputmode="numeric">
+                    <span>stonks</span>
+                </div>
+                <div class="order-estimate">
+                    <span>Sus you'll fling</span>
+                    <strong id="order-estimate">SUS 0.00</strong>
+                </div>
+                <div class="trade-actions">
+                    <button class="buy-button" id="buy-button" type="button">Buy</button>
+                    <button class="sell-button" id="sell-button" type="button">Sell</button>
+                </div>
+                <p class="trade-message" id="trade-message" aria-live="polite">Pick a stonk. Become financially suspicious.</p>
+                <p class="ticket-note">Completely fake Sus. Absolutely real panic.</p>
+            </aside>
+        </section>
+
+        <section class="panel watchlist" aria-labelledby="watchlist-heading">
+            <div class="panel-heading">
+                <div>
+                    <h2 id="watchlist-heading">Stonks & weird stuff</h2>
+                    <p>13 fake assets · Click one to inspect the chaos, then buy or sell</p>
+                </div>
+                <span class="panel-kicker" id="last-updated">Updating…</span>
+            </div>
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Asset</th>
+                            <th>Last price</th>
+                            <th>Today's change</th>
+                            <th>Shares owned</th>
+                            <th>Market value</th>
+                            <th>Quick trade</th>
+                        </tr>
+                    </thead>
+                    <tbody id="market-rows"></tbody>
+                </table>
+            </div>
+        </section>
+        <footer>None of this is real investing advice. It is just Sus. Please do not call your financial advisor.</footer>
+    </main>
+
     <script>
-        // 1. Pull the player's currency from the main game, default to 0 if none exists
-        let playerCash = parseInt(localStorage.getItem("playerSusCurrency")) || 0;
+        const ASSET_DEFINITIONS = [
+            { id: 'suscoin', symbol: 'SUS', name: 'SusCoin', price: 10, volatility: 0.008 },
+            { id: 'skb', symbol: 'SKBD', name: 'Skibidi Corp', price: 150, volatility: 0.012 },
+            { id: 'crg', symbol: 'CRG', name: 'Codrot Games', price: 500, volatility: 0.016 },
+            { id: 'rizztech', symbol: 'RIZZ', name: 'RizzTech', price: 225, volatility: 0.013 },
+            { id: 'impostor', symbol: 'IMPS', name: 'Impostor Motors', price: 78, volatility: 0.014 },
+            { id: 'brainrot', symbol: 'BRRT', name: 'Brainrot Media', price: 42.5, volatility: 0.017 },
+            { id: 'ventworks', symbol: 'VENT', name: 'VentWorks', price: 63, volatility: 0.01 },
+            { id: 'mewlabs', symbol: 'MEW', name: 'Mewing Labs', price: 315, volatility: 0.012 },
+            { id: 'gyattenergy', symbol: 'GYAT', name: 'Gyatt Energy', price: 18.75, volatility: 0.018 },
+            { id: 'sigmasemi', symbol: 'SIG', name: 'Sigma Semiconductor', price: 940, volatility: 0.011 },
+            { id: 'ohiofoods', symbol: 'OHIO', name: 'Ohio Foods', price: 32, volatility: 0.009 },
+            { id: 'aurasystems', symbol: 'AURA', name: 'Aura Systems', price: 185, volatility: 0.013 },
+            { id: 'skibidiair', symbol: 'SKBA', name: 'Skibidi Airways', price: 112, volatility: 0.015 }
+        ];
 
-        // Pull existing stocks or setup defaults
-        let market = JSON.parse(localStorage.getItem("marketData")) || {
-        suscoin: { price: 10, owned: 0, volatility: 0.1 },
-        skb: { price: 150, owned: 0, volatility: 0.2 },
-        crg: { price: 500, owned: 0, volatility: 0.35 }
-};
-
-
-        // Update the display when the page loads
-        document.getElementById("balance-display").innerText = playerCash;
-        updateMarketUI();
-
-        function buyAsset(id) {
-            let asset = market[id];
-            if (playerCash >= asset.price) {
-                playerCash -= Math.floor(asset.price);
-                asset.owned++;
-                updateMarketUI();
-            } else {
-                alert("Not enough Sus!");
+        function readSavedMarket() {
+            const raw = localStorage.getItem('marketData');
+            if (!raw) return {};
+            try {
+                return JSON.parse(raw) || {};
+            } catch (error) {
+                console.error('Unable to load saved market data:', error);
+                return {};
             }
         }
 
-        function sellAsset(id) {
-            let asset = market[id];
-            if (asset.owned > 0) {
-                playerCash += Math.floor(asset.price);
-                asset.owned--;
-                updateMarketUI();
+        const savedMarket = readSavedMarket();
+        const now = new Date();
+        const marketDay = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        const market = Object.fromEntries(ASSET_DEFINITIONS.map((definition) => {
+            const saved = savedMarket[definition.id] || {};
+            const price = Number.isFinite(saved.price) && saved.price > 0 ? saved.price : definition.price;
+            const sameMarketDay = saved.dayKey === marketDay;
+            const savedHistory = sameMarketDay && Array.isArray(saved.history)
+                ? saved.history.filter((value) => Number.isFinite(value) && value > 0).slice(-30)
+                : [];
+            return [definition.id, {
+                ...definition,
+                price,
+                owned: Number.isFinite(saved.owned) ? Math.max(0, Math.floor(saved.owned)) : 0,
+                dailyOpen: sameMarketDay && Number.isFinite(saved.dailyOpen) && saved.dailyOpen > 0
+                    ? saved.dailyOpen
+                    : price,
+                dayKey: marketDay,
+                history: savedHistory.length ? savedHistory : [price]
+            }];
+        }));
+
+        let playerCash = Math.max(0, Number(game.susPoints) || 0);
+        let selectedAssetId = 'suscoin';
+
+        function formatSus(amount, decimals = 2) {
+            return `SUS ${Number(amount).toLocaleString('en-US', {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            })}`;
+        }
+
+        function formatChange(amount) {
+            const sign = amount > 0 ? '+' : '';
+            return `${sign}${amount.toFixed(2)}%`;
+        }
+
+        function assetChange(asset) {
+            return ((asset.price - asset.dailyOpen) / asset.dailyOpen) * 100;
+        }
+
+        function portfolioValue() {
+            return Object.values(market).reduce((total, asset) => total + asset.owned * asset.price, 0);
+        }
+
+        function dailyPortfolioChange() {
+            return Object.values(market).reduce((total, asset) => total + asset.owned * (asset.price - asset.dailyOpen), 0);
+        }
+
+        function saveMarket() {
+            localStorage.setItem('marketData', JSON.stringify(market));
+        }
+
+        function setTradeMessage(message, type = '') {
+            const element = document.getElementById('trade-message');
+            element.textContent = message;
+            element.className = `trade-message ${type}`;
+        }
+
+        function renderChart(asset) {
+            const svg = document.getElementById('price-chart');
+            const values = asset.history.slice(-30);
+            const width = 760;
+            const height = 230;
+            const padX = 12;
+            const padY = 16;
+            const minimum = Math.min(...values);
+            const maximum = Math.max(...values);
+            const range = Math.max(maximum - minimum, maximum * 0.005, 0.01);
+            const points = values.map((value, index) => {
+                const x = padX + index * (width - padX * 2) / Math.max(values.length - 1, 1);
+                const y = height - padY - ((value - minimum) / range) * (height - padY * 2);
+                return [x, y];
+            });
+            const line = points.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
+            const first = points[0];
+            const last = points[points.length - 1];
+            const area = `${first[0]},${height} ${line} ${last[0]},${height}`;
+            const color = assetChange(asset) >= 0 ? '#27d79a' : '#ff657a';
+            svg.innerHTML = `
+                <defs>
+                    <linearGradient id="chart-fill" x1="0" x2="0" y1="0" y2="1">
+                        <stop offset="0%" stop-color="#27d79a" stop-opacity=".22"></stop>
+                        <stop offset="100%" stop-color="#27d79a" stop-opacity="0"></stop>
+                    </linearGradient>
+                    <linearGradient id="chart-fill-down" x1="0" x2="0" y1="0" y2="1">
+                        <stop offset="0%" stop-color="#ff657a" stop-opacity=".22"></stop>
+                        <stop offset="100%" stop-color="#ff657a" stop-opacity="0"></stop>
+                    </linearGradient>
+                </defs>
+                <line class="chart-grid" x1="0" y1="58" x2="${width}" y2="58"></line>
+                <line class="chart-grid" x1="0" y1="115" x2="${width}" y2="115"></line>
+                <line class="chart-grid" x1="0" y1="172" x2="${width}" y2="172"></line>
+                <polygon class="chart-area" points="${area}"></polygon>
+                <polyline class="chart-line" style="stroke:${color}" points="${line}"></polyline>`;
+            document.getElementById('chart-panel').classList.toggle('down', assetChange(asset) < 0);
+            document.getElementById('chart-range').textContent = `Last ${values.length} market updates`;
+        }
+
+        function renderWatchlist() {
+            const rows = document.getElementById('market-rows');
+            rows.innerHTML = ASSET_DEFINITIONS.map((definition) => {
+                const asset = market[definition.id];
+                const change = assetChange(asset);
+                const changeClass = change >= 0 ? 'positive' : 'negative';
+                return `<tr data-select-asset="${asset.id}" class="${asset.id === selectedAssetId ? 'selected' : ''}">
+                    <td><div class="symbol-cell"><span class="symbol-icon">${asset.symbol.slice(0, 3)}</span><span class="symbol-name"><strong>${asset.symbol}</strong><span>${asset.name}</span></span></div></td>
+                    <td>${formatSus(asset.price)}</td>
+                    <td class="${changeClass}">${formatChange(change)}</td>
+                    <td>${asset.owned.toLocaleString()}</td>
+                    <td>${formatSus(asset.owned * asset.price)}</td>
+                    <td><button class="row-action" type="button" data-quick-trade="buy" data-asset="${asset.id}">Buy 1</button> <button class="row-action" type="button" data-quick-trade="sell" data-asset="${asset.id}">Sell 1</button></td>
+                </tr>`;
+            }).join('');
+        }
+
+        function renderSelectedAsset() {
+            const asset = market[selectedAssetId];
+            const change = assetChange(asset);
+            document.getElementById('selected-icon').textContent = asset.symbol.slice(0, 3);
+            document.getElementById('selected-name').textContent = asset.name;
+            document.getElementById('selected-symbol').textContent = `${asset.symbol} · Simulated asset`;
+            document.getElementById('selected-price').textContent = formatSus(asset.price);
+            const changeElement = document.getElementById('selected-change');
+            changeElement.textContent = formatChange(change);
+            changeElement.className = `change-chip ${change >= 0 ? 'positive' : 'negative'}`;
+            document.getElementById('ticket-asset').textContent = `${asset.name} (${asset.symbol})`;
+            document.getElementById('order-estimate').textContent = formatSus(asset.price * Math.max(1, Number(document.getElementById('order-quantity').value) || 1));
+            renderChart(asset);
+        }
+
+        function renderOverview() {
+            playerCash = Math.max(0, Number(game.susPoints) || 0);
+            const holdings = portfolioValue();
+            const change = dailyPortfolioChange();
+            document.getElementById('balance-display').textContent = formatSus(playerCash, 0);
+            document.getElementById('portfolio-value').textContent = formatSus(holdings);
+            document.getElementById('account-value').textContent = formatSus(playerCash + holdings, 0);
+            const changeElement = document.getElementById('daily-change');
+            changeElement.textContent = `${change >= 0 ? '+' : '−'}${formatSus(Math.abs(change))}`;
+            changeElement.className = `stat-value ${change >= 0 ? 'positive' : 'negative'}`;
+        }
+
+        function renderMarket() {
+            renderOverview();
+            renderSelectedAsset();
+            renderWatchlist();
+        }
+
+        function executeTrade(assetId, side, quantity) {
+            const asset = market[assetId];
+            const amount = Math.floor(Number(quantity));
+            if (!asset || !Number.isSafeInteger(amount) || amount < 1) {
+                setTradeMessage('Enter a valid whole-share quantity.', 'error');
+                return;
             }
+
+            const total = Math.round(asset.price * amount * 100) / 100;
+            playerCash = Math.max(0, Number(game.susPoints) || 0);
+            if (side === 'buy') {
+                if (total > playerCash) {
+                    setTradeMessage('Not enough Sus for this order.', 'error');
+                    return;
+                }
+                playerCash -= total;
+                asset.owned += amount;
+                setTradeMessage(`Bought ${amount} ${asset.symbol} share${amount === 1 ? '' : 's'} for ${formatSus(total)}.`, 'success');
+            } else {
+                if (asset.owned < amount) {
+                    setTradeMessage(`You only own ${asset.owned} ${asset.symbol} share${asset.owned === 1 ? '' : 's'}.`, 'error');
+                    return;
+                }
+                playerCash += total;
+                asset.owned -= amount;
+                setTradeMessage(`Sold ${amount} ${asset.symbol} share${amount === 1 ? '' : 's'} for ${formatSus(total)}.`, 'success');
+            }
+
+            saveSus(playerCash);
+            saveMarket();
+            renderMarket();
         }
 
         function updateMarketPrices() {
-            for (let id in market) {
-                let asset = market[id];
-                let previousPrice = asset.price;
-                let changePercent = (Math.random() * 2 - 1) * asset.volatility;
-                
-                if (Math.random() < 0.05) { changePercent = (Math.random() > 0.5) ? 0.69 : -0.50; }
-                asset.price = Math.max(1, asset.price * (1 + changePercent));
+            for (const asset of Object.values(market)) {
+                let movement = (Math.random() * 2 - 1) * asset.volatility;
+                if (Math.random() < 0.015) movement = Math.random() > 0.5 ? 0.06 : -0.06;
+                asset.price = Math.max(0.01, asset.price * (1 + movement));
+                asset.history.push(asset.price);
+                if (asset.history.length > 30) asset.history.shift();
+            }
+            saveMarket();
+            document.getElementById('last-updated').textContent = `Updated ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
+            renderMarket();
+        }
 
-                let priceEl = document.getElementById(`${id}-price`);
-                let trendEl = document.getElementById(`${id}-trend`);
+        document.getElementById('order-quantity').addEventListener('input', () => {
+            const asset = market[selectedAssetId];
+            const quantity = Math.max(1, Number(document.getElementById('order-quantity').value) || 1);
+            document.getElementById('order-estimate').textContent = formatSus(asset.price * quantity);
+        });
 
-                if (priceEl && trendEl) {
-                    priceEl.innerText = `$${asset.price.toFixed(2)}`;
-                    let actualChange = ((asset.price - previousPrice) / previousPrice) * 100;
-                    if (actualChange > 0) {
-                        trendEl.innerText = `▲ +${actualChange.toFixed(1)}%`;
-                        trendEl.className = "trend-up";
-                    } else {
-                        trendEl.innerText = `▼ ${actualChange.toFixed(1)}%`;
-                        trendEl.className = "trend-down";
+        document.getElementById('buy-button').addEventListener('click', () => {
+            executeTrade(selectedAssetId, 'buy', document.getElementById('order-quantity').value);
+        });
+        document.getElementById('sell-button').addEventListener('click', () => {
+            executeTrade(selectedAssetId, 'sell', document.getElementById('order-quantity').value);
+        });
+
+        document.getElementById('market-rows').addEventListener('click', (event) => {
+            const quickTrade = event.target.closest('[data-quick-trade]');
+            if (quickTrade) {
+                event.stopPropagation();
+                executeTrade(quickTrade.dataset.asset, quickTrade.dataset.quickTrade, 1);
+                return;
+            }
+            const row = event.target.closest('[data-select-asset]');
+            if (row) {
+                selectedAssetId = row.dataset.selectAsset;
+                renderMarket();
+            }
+        });
+
+        window.addEventListener('storage', (event) => {
+            if (event.key === SAVE_KEY && event.newValue) {
+                try {
+                    const updatedGame = JSON.parse(event.newValue);
+                    if (Number.isFinite(updatedGame.susPoints)) {
+                        game.susPoints = updatedGame.susPoints;
+                        renderOverview();
                     }
+                } catch (error) {
+                    console.error('Unable to sync shared game balance:', error);
                 }
             }
-            // Temporarily save stock amounts and current prices while on this page
-            localStorage.setItem("marketData", JSON.stringify(market));
-        }
+        });
 
-        function updateMarketUI() {
-            document.getElementById("balance-display").innerText = playerCash;
-            for (let id in market) {
-                let ownedEl = document.getElementById(`${id}-owned`);
-                if (ownedEl) ownedEl.innerText = market[id].owned;
-            }
-        }
-
-        // Save everything back to localStorage right before heading back to index.html
-        function saveBeforeLeave() {
-            localStorage.setItem("playerSusCurrency", playerCash);
-            localStorage.setItem("marketData", JSON.stringify(market));
-        }
-        // Run this when index.html loads up
-    if (localStorage.getItem("playerSusCurrency")) {
-    susCurrency = parseInt(localStorage.getItem("playerSusCurrency"));
-}
-// Use this in both stocks.html and casino.html (after loading data.js)
-function getSus() {
-  return Math.floor(game.susPoints);
-}
-
-function saveSus(newAmount) {
-  game.susPoints = Math.max(0, newAmount);
-  saveSharedGame();
-  const el = document.getElementById('global-sus') || document.getElementById('balance-display');
-  if (el) el.innerText = game.susPoints.toLocaleString();
-}
-
-
-        setInterval(updateMarketPrices, 3000); // Update market prices every 3 seconds
+        renderMarket();
+        updateMarketPrices();
+        setInterval(updateMarketPrices, 3000);
     </script>
+</body>
+</html>

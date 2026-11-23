@@ -3,31 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#160c2a">
     <script src="data.js"></script>
     <title>🎰 Sussy Casino 💀</title>
     <style>
-        body { background-color: #121212; color: #fff; font-family: 'Courier New', Courier, monospace; text-align: center; margin: 0; padding: 20px; }
-        a { color: #ff4444; font-weight: bold; text-decoration: none; font-size: 1.2rem; }
-        .casino-nav { margin-bottom: 30px; display: flex; justify-content: center; gap: 20px; }
-        .game-card { display: none; background: #1e1e1e; border: 3px solid #ff4444; border-radius: 10px; max-width: 500px; margin: 20px auto; padding: 20px; box-shadow: 0 0 15px rgba(255, 68, 68, 0.4); }
-        .active { display: block; }
-        button { background: #ff4444; color: white; border: none; padding: 10px 20px; font-size: 1rem; cursor: pointer; font-weight: bold; margin: 5px; border-radius: 5px; }
-        button:hover { background: #cc3333; }
-        input { padding: 8px; font-size: 1rem; width: 80px; text-align: center; background: #333; color: #fff; border: 1px solid #555; }
-        .display-box { font-size: 1.5rem; margin: 15px 0; background: #000; padding: 10px; border-radius: 5px; min-height: 40px; display: flex; justify-content: center; align-items: center; }
+        :root { color-scheme: dark; --page: #090d14; --panel: #111823; --panel-soft: #151e2b; --border: #243142; --muted: #8290a3; --text: #e8edf5; --red: #fb6477; --green: #28d79a; --gold: #f5c66b; }
+        * { box-sizing: border-box; }
+        body { min-height: 100vh; margin: 0; padding: 0 18px 48px; background: radial-gradient(ellipse at 50% -20%, #282034 0, var(--page) 55%); color: var(--text); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; text-align: center; }
+        a { color: #f2a0aa; font-weight: 650; text-decoration: none; }
+        .casino-header { display: flex; align-items: center; justify-content: space-between; gap: 18px; max-width: 1120px; margin: 0 auto; padding: 20px 0; border-bottom: 1px solid var(--border); }
+        .brand { display: flex; align-items: center; gap: 12px; color: var(--text); font-size: 14px; font-weight: 800; letter-spacing: .04em; text-align: left; }
+        .brand-mark { display: grid; width: 38px; height: 38px; place-items: center; border: 1px solid #63454c; border-radius: 12px; background: #2b1d26; font-size: 20px; }
+        .brand small { display: block; margin-top: 2px; color: var(--muted); font-size: 9px; letter-spacing: .15em; }
+        .wallet { padding: 9px 13px; border: 1px solid var(--border); border-radius: 9px; background: var(--panel); color: var(--muted); font-size: 11px; }
+        .wallet strong { margin-left: 8px; color: var(--gold); font-size: 14px; }
+        main { width: min(1120px, 100%); margin: 30px auto; }
+        .page-heading { margin-bottom: 20px; }
+        .page-heading h1 { margin: 0 0 5px; font-size: clamp(26px, 4vw, 36px); letter-spacing: -.04em; }
+        .page-heading p { margin: 0; color: var(--muted); font-size: 13px; }
+        .casino-nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 0 auto 20px; padding: 8px; border: 1px solid var(--border); border-radius: 12px; background: #0e141d; }
+        .casino-nav a, .casino-nav button { display: inline-flex; min-height: 39px; align-items: center; justify-content: center; margin: 0; padding: 8px 13px; border: 1px solid transparent; border-radius: 8px; background: transparent; color: #aab6c6; font-size: 12px; font-weight: 700; }
+        .casino-nav button:hover, .casino-nav a:hover { background: #1b2533; color: white; }
+        .casino-nav button.active-tab { border-color: #67434b; background: #2a1c24; color: #ff9aa6; }
+        .game-card { display: none; max-width: 760px; margin: 0 auto; padding: clamp(20px, 4vw, 34px); border: 1px solid var(--border); border-radius: 16px; background: linear-gradient(145deg, #141d29, #0f151e 72%); box-shadow: 0 20px 70px #0005; }
+        .game-card.active { display: block; animation: enter .2s ease-out; }
+        @keyframes enter { from { opacity: .4; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .game-card h2 { margin: 0 0 7px; font-size: 22px; }
+        .game-card > p { margin: 0 auto 20px; color: var(--muted); font-size: 13px; }
+        .game-card label { display: inline-block; margin: 8px 8px 8px 0; color: #c1ccda; font-size: 12px; font-weight: 650; }
+        .game-card input { width: 110px; padding: 10px; border: 1px solid #354254; border-radius: 8px; outline: none; background: #0b1119; color: var(--text); text-align: center; }
+        .game-card input:focus { border-color: #fb6477; box-shadow: 0 0 0 3px #fb647722; }
+        button { margin: 5px; padding: 10px 16px; border: 1px solid #88414b; border-radius: 8px; background: linear-gradient(180deg, #e95d70, #c94359); color: #fff; font-size: 12px; font-weight: 750; cursor: pointer; transition: transform .12s, filter .12s; }
+        button:hover { filter: brightness(1.1); }
+        button:active { transform: translateY(1px); }
+        button.green-button { border-color: #188d68; background: linear-gradient(180deg, #33d7a1, #1ca779); color: #06160f; }
+        button.dark-button { border-color: #3a4657; background: #1a2533; }
+        .display-box { min-height: 54px; display: flex; align-items: center; justify-content: center; margin: 17px 0 8px; padding: 12px; border: 1px solid #202c3b; border-radius: 10px; background: #0b1119; font-size: 18px; font-weight: 700; }
+        .game-result { min-height: 26px; margin: 10px 0 0; color: #cad4e1; font-size: 13px; font-weight: 650; }
+        .bet-row { margin: 20px 0 4px; }
+        .game-hint { margin: 12px 0 0 !important; color: #738197 !important; font-size: 11px !important; }
+        .hand-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 18px 0; }
+        .hand-box { padding: 14px; border: 1px solid var(--border); border-radius: 10px; background: #0d141e; }
+        .hand-box strong { display: block; margin-bottom: 9px; color: var(--muted); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }
+        .hand-box span { font-size: 21px; }
+        .roulette-choices { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 16px 0; }
+        .roulette-choices button { min-width: 110px; }
+        .roulette-red { background: #d84558; }
+        .roulette-black { border-color: #4a5565; background: #202936; }
+        .roulette-green { border-color: #168462; background: #168462; }
+        .slot-reels { display: flex; justify-content: center; gap: 10px; margin: 22px 0 10px; }
+        .slot-reels span { display: grid; width: clamp(64px, 15vw, 92px); height: clamp(72px, 17vw, 100px); place-items: center; border: 1px solid #3c4656; border-radius: 12px; background: linear-gradient(#f4f0e8, #c9c4ba); color: #111827; font-size: clamp(34px, 8vw, 52px); box-shadow: inset 0 0 0 4px #ffffff77; }
+        .dice-options { display: flex; flex-wrap: wrap; justify-content: center; margin-top: 15px; }
+        .dice-options button { min-width: 120px; }
+        .payout-note { margin: 14px auto 0; color: var(--muted); font-size: 11px; }
+        @media (max-width: 600px) {
+            body { padding-inline: 12px; }
+            .casino-header { padding: 14px 0; }
+            .wallet { padding: 8px; }
+            .casino-nav { justify-content: flex-start; overflow-x: auto; flex-wrap: nowrap; }
+            .casino-nav a, .casino-nav button { flex: 0 0 auto; }
+            .hand-grid { grid-template-columns: 1fr; }
+            .game-card { border-radius: 13px; }
+        }
     </style>
+    <link rel="stylesheet" href="brainrot-theme.css">
 </head>
 <body>
-    <h1>
-        🎰 WELCOME TO THE SUSSY CASINO 🎰</h1>
-    <p>Your Current Sus: <span id="global-sus">Loading...</span></p>
-    
-    <div class="casino-nav">
-        <a href="index.html">⬅️ Go Back to Clicking</a> |
-        <button onclick="switchGame('plinko')">🟢 Plinko</button>
-        <button onclick="switchGame('blackjack')">🃏 Blackjack</button>
-        <button onclick="switchGame('poker')">🤠 Sussy Poker</button>
-    </div>
+    <header class="casino-header">
+        <a class="brand" href="casino.html">
+            <span class="brand-mark">ඞ</span>
+            <span>SUSSY WORLD<small>GOBLIN GAMBLING PIT</small></span>
+        </a>
+        <nav class="site-nav" aria-label="Game navigation">
+            <a href="index.html">Clicker</a>
+            <a href="stocks.html">Stonks</a>
+            <a class="current" href="casino.html">Casino</a>
+        </nav>
+        <div class="wallet">SHARED WALLET<strong><span id="global-sus">Loading...</span> SUS</strong></div>
+    </header>
+    <main>
+        <div class="page-heading">
+            <h1>Choose your chaos</h1>
+            <p>Six ways to lose Sus. One shared wallet. Absolutely no financial wisdom.</p>
+        </div>
+        <div class="casino-nav" role="tablist" aria-label="Casino games">
+            <button class="active-tab" role="tab" aria-selected="true" onclick="switchGame('plinko', this)">🟢 Plinko</button>
+            <button role="tab" aria-selected="false" onclick="switchGame('blackjack', this)">🃏 Blackjack</button>
+            <button role="tab" aria-selected="false" onclick="switchGame('poker', this)">♠ Poker</button>
+            <button role="tab" aria-selected="false" onclick="switchGame('roulette', this)">🎡 Roulette</button>
+            <button role="tab" aria-selected="false" onclick="switchGame('slots', this)">🎰 Slots</button>
+            <button role="tab" aria-selected="false" onclick="switchGame('dice', this)">🎲 Dice</button>
+        </div>
 
     <!-- PLINKO GAME -->
     <div id="game-plinko" class="game-card active">
@@ -51,8 +117,10 @@
             <button onclick="startBlackjack()">Deal Cards</button>
         </div>
         <div id="bj-gameplay" style="display:none;">
-            <p><strong>Dealer Hand:</strong> <span id="bj-dealer-hand">?</span></p>
-            <p><strong>Your Hand:</strong> <span id="bj-player-hand">?</span> (Total: <span id="bj-player-total">0</span>)</p>
+            <div class="hand-grid">
+                <div class="hand-box"><strong>Dealer hand</strong><span id="bj-dealer-hand">?</span></div>
+                <div class="hand-box"><strong>Your hand · <span id="bj-player-total">0</span></strong><span id="bj-player-hand">?</span></div>
+            </div>
             <button onclick="blackjackAction('hit')">Hit</button>
             <button onclick="blackjackAction('stand')">Stand</button>
         </div>
@@ -67,58 +135,86 @@
         <input type="number" id="poker-bet" value="10" min="1">
         <br><br>
         <button onclick="playPoker()">Deal Showdown</button>
-        <div id="poker-board" class="display-box" style="flex-direction: column; font-size:1.1rem;">
-            <div>Dealer: <span id="poker-dealer">---</span></div>
-            <div style="margin-top: 10px;">You: <span id="poker-player">---</span></div>
+        <div id="poker-board" class="hand-grid">
+            <div class="hand-box"><strong>Dealer</strong><span id="poker-dealer">---</span></div>
+            <div class="hand-box"><strong>You</strong><span id="poker-player">---</span></div>
         </div>
         <div id="poker-result" style="font-weight:bold;"></div>
     </div>
 
+    <div id="game-roulette" class="game-card">
+        <h2>🎡 Sus Roulette</h2>
+        <p>Pick a color and spin. Red and black pay 2×; green zero pays 36×.</p>
+        <div class="bet-row">
+            <label for="roulette-bet">Bet amount</label>
+            <input type="number" id="roulette-bet" value="10" min="1" step="1">
+        </div>
+        <div class="roulette-choices">
+            <button class="roulette-red" onclick="playRoulette('red')">Bet Red · 2×</button>
+            <button class="roulette-black" onclick="playRoulette('black')">Bet Black · 2×</button>
+            <button class="roulette-green" onclick="playRoulette('green')">Bet Green · 36×</button>
+        </div>
+        <div id="roulette-wheel" class="display-box">🎡 Ready to spin</div>
+        <div id="roulette-result" class="game-result" aria-live="polite"></div>
+        <p class="payout-note">A winning payout includes your original stake.</p>
+    </div>
+
+    <div id="game-slots" class="game-card">
+        <h2>🎰 Brainrot Slots</h2>
+        <p>Line up three symbols for a big multiplier. Any pair returns 2×.</p>
+        <div class="slot-reels" aria-label="Slot machine result">
+            <span id="slot-one">?</span><span id="slot-two">?</span><span id="slot-three">?</span>
+        </div>
+        <div class="bet-row">
+            <label for="slots-bet">Bet amount</label>
+            <input type="number" id="slots-bet" value="10" min="1" step="1">
+            <button onclick="playSlots()">Spin reels</button>
+        </div>
+        <div id="slots-result" class="game-result" aria-live="polite"></div>
+        <p class="payout-note">Triple 🍋 3× · 🍒 4× · 🔔 6× · ⭐ 10× · 💎 15× · Any pair 2×</p>
+    </div>
+
+    <div id="game-dice" class="game-card">
+        <h2>🎲 Dice Dash</h2>
+        <p>Roll two dice. Call under 7 or over 7 for 2.2×, or hit exactly 7 for 5.5×.</p>
+        <div class="bet-row">
+            <label for="dice-bet">Bet amount</label>
+            <input type="number" id="dice-bet" value="10" min="1" step="1">
+        </div>
+        <div class="dice-options">
+            <button class="dark-button" onclick="playDice('under')">Under 7 · 2.2×</button>
+            <button class="dark-button" onclick="playDice('seven')">Exactly 7 · 5.5×</button>
+            <button class="dark-button" onclick="playDice('over')">Over 7 · 2.2×</button>
+        </div>
+        <div id="dice-roll" class="display-box">🎲 🎲</div>
+        <div id="dice-result" class="game-result" aria-live="polite"></div>
+        <p class="payout-note">A winning payout includes your original stake.</p>
+    </div>
+</main>
+
     <script>
-        // --- 1. LOCAL STORAGE SYNC ENGINE ---
-        // Reads your game's data. Automatically falls back if it doesn't find your data structure yet.
-        function getSus() {
-            let data = localStorage.getItem('sussy_clicker_save') || localStorage.getItem('playerData');
-            if (data) {
-                try {
-                    let parsed = JSON.parse(data);
-                    return parsed.sus !== undefined ? parsed.sus : (parsed.points || 100);
-                } catch(e) { return 100; }
-            }
-            return 100; // Fallback starting money
-        }
-
-        function saveSus(newAmount) {
-            // Find your actual key used in your main game file, update it, and broadcast it back
-            let key = localStorage.getItem('sussy_clicker_save') ? 'sussy_clicker_save' : 'playerData';
-            let data = localStorage.getItem(key);
-            let parsed = data ? JSON.parse(data) : {};
-            
-            parsed.sus = newAmount; // Update the currency property
-            if(parsed.points !== undefined) parsed.points = newAmount; 
-
-            localStorage.setItem(key, JSON.stringify(parsed));
-            document.getElementById('global-sus').innerText = newAmount;
-        }
-
         // Initialize display value on page load
         document.getElementById('global-sus').innerText = getSus();
 
-        function switchGame(gameId) {
+        function switchGame(gameId, selectedTab) {
             document.querySelectorAll('.game-card').forEach(card => card.classList.remove('active'));
             document.getElementById(`game-${gameId}`).classList.add('active');
+            document.querySelectorAll('.casino-nav [role="tab"]').forEach(tab => {
+                tab.classList.toggle('active-tab', tab === selectedTab);
+                tab.setAttribute('aria-selected', String(tab === selectedTab));
+            });
         }
 
         function validateBet(betAmount) {
             let currentSus = getSus();
-            if (isNaN(betAmount) || betAmount <= 0) { alert("Enter a valid bet!"); return false; }
+            if (!Number.isSafeInteger(betAmount) || betAmount <= 0) { alert("Enter a valid whole-number bet!"); return false; }
             if (betAmount > currentSus) { alert("You don't have enough Sus!"); return false; }
             return true;
         }
 
         // --- 2. GAME LIBRARIES: PLINKO ---
         function playPlinko() {
-            let bet = parseInt(document.getElementById('plinko-bet').value);
+            let bet = Number(document.getElementById('plinko-bet').value);
             if (!validateBet(bet)) return;
 
             let currentSus = getSus();
@@ -171,7 +267,7 @@
         }
 
         function startBlackjack() {
-            let bet = parseInt(document.getElementById('bj-bet').value);
+            let bet = Number(document.getElementById('bj-bet').value);
             if (!validateBet(bet)) return;
 
             let currentSus = getSus() - bet;
@@ -236,7 +332,7 @@
 
         // --- 4. GAME LIBRARIES: SHOWDOWN POKER ---
         function playPoker() {
-            let bet = parseInt(document.getElementById('poker-bet').value);
+            let bet = Number(document.getElementById('poker-bet').value);
             if (!validateBet(bet)) return;
 
             let currentSus = getSus() - bet;
@@ -263,18 +359,69 @@
             }
             saveSus(currentSus);
         }
-        // Use this in both stocks.html and casino.html (after loading data.js)
-function getSus() {
-  return Math.floor(game.susPoints);
-}
 
-function saveSus(newAmount) {
-  game.susPoints = Math.max(0, newAmount);
-  saveSharedGame();
-  const el = document.getElementById('global-sus') || document.getElementById('balance-display');
-  if (el) el.innerText = game.susPoints.toLocaleString();
-}
+        function playRoulette(choice) {
+            let bet = Number(document.getElementById('roulette-bet').value);
+            if (!validateBet(bet)) return;
 
+            const redNumbers = new Set([1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36]);
+            const number = Math.floor(Math.random() * 37);
+            const color = number === 0 ? 'green' : redNumbers.has(number) ? 'red' : 'black';
+            const won = color === choice;
+            const payout = won ? bet * (choice === 'green' ? 36 : 2) : 0;
+            const currentSus = getSus() - bet + payout;
+
+            saveSus(currentSus);
+            document.getElementById('roulette-wheel').innerText = `${number} · ${color.toUpperCase()}`;
+            const result = document.getElementById('roulette-result');
+            result.innerText = won ? `Winner! You received ${payout.toLocaleString()} Sus.` : `No win this spin. You bet on ${choice}.`;
+            result.style.color = won ? '#28d79a' : '#fb6477';
+        }
+
+        function playSlots() {
+            let bet = Number(document.getElementById('slots-bet').value);
+            if (!validateBet(bet)) return;
+
+            const symbols = ['🍒', '🍋', '🔔', '⭐', '💎'];
+            const reels = Array.from({ length: 3 }, () => symbols[Math.floor(Math.random() * symbols.length)]);
+            const counts = reels.reduce((map, symbol) => map.set(symbol, (map.get(symbol) || 0) + 1), new Map());
+            const triple = reels[0] === reels[1] && reels[1] === reels[2];
+            const pair = [...counts.values()].includes(2);
+            const multipliers = { '🍒': 4, '🔔': 6, '⭐': 10, '💎': 15 };
+            const multiplier = triple ? multipliers[reels[0]] || 3 : pair ? 2 : 0;
+            const payout = Math.floor(bet * multiplier);
+            const currentSus = getSus() - bet + payout;
+
+            ['slot-one', 'slot-two', 'slot-three'].forEach((id, index) => {
+                document.getElementById(id).innerText = reels[index];
+            });
+            saveSus(currentSus);
+            const result = document.getElementById('slots-result');
+            result.innerText = multiplier
+                ? `${triple ? 'Three of a kind' : 'Pair'}! ${multiplier}× payout: ${payout.toLocaleString()} Sus.`
+                : 'No match this time. Try another spin.';
+            result.style.color = multiplier ? '#28d79a' : '#fb6477';
+        }
+
+        function playDice(choice) {
+            let bet = Number(document.getElementById('dice-bet').value);
+            if (!validateBet(bet)) return;
+            if (!['under', 'seven', 'over'].includes(choice)) return;
+
+            const first = Math.floor(Math.random() * 6) + 1;
+            const second = Math.floor(Math.random() * 6) + 1;
+            const total = first + second;
+            const won = choice === 'under' ? total < 7 : choice === 'over' ? total > 7 : total === 7;
+            const multiplier = choice === 'seven' ? 5.5 : 2.2;
+            const payout = won ? Math.floor(bet * multiplier) : 0;
+            const currentSus = getSus() - bet + payout;
+
+            saveSus(currentSus);
+            document.getElementById('dice-roll').innerText = `🎲 ${first}  +  ${second} 🎲  =  ${total}`;
+            const result = document.getElementById('dice-result');
+            result.innerText = won ? `Nice roll! You received ${payout.toLocaleString()} Sus.` : `Not this time. The total was ${total}.`;
+            result.style.color = won ? '#28d79a' : '#fb6477';
+        }
 </script>
 </body>
 </html>
