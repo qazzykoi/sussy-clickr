@@ -1,6 +1,26 @@
 const SAVE_KEY = 'sussy_clicker_save_v5';
 const SAVE_BACKUP_KEY = `${SAVE_KEY}_backup`;
-const SAVE_VERSION = 1;
+const SAVE_VERSION = 2;
+
+function formatCompactNumber(amount, decimals = 1) {
+  const value = Number(amount) || 0;
+  const absolute = Math.abs(value);
+  if (absolute < 100000) return Math.floor(value).toLocaleString();
+
+  const suffixes = [
+    [1e33, 'Dc'], [1e30, 'No'], [1e27, 'Oc'], [1e24, 'Sp'],
+    [1e21, 'Sx'], [1e18, 'Qi'], [1e15, 'Qa'], [1e12, 'T'],
+    [1e9, 'B'], [1e6, 'M'], [1e3, 'K']
+  ];
+  for (const [scale, suffix] of suffixes) {
+    if (absolute >= scale) {
+      const compact = value / scale;
+      const digits = Math.abs(compact) >= 100 ? 0 : Math.abs(compact) >= 10 ? 1 : decimals;
+      return `${compact.toFixed(digits).replace(/\.0+$/, '')}${suffix}`;
+    }
+  }
+  return Math.floor(value).toLocaleString();
+}
 
 const DEFAULT_GAME = {
   saveVersion: SAVE_VERSION,
@@ -14,6 +34,11 @@ const DEFAULT_GAME = {
   marsUnlocked: false,
   marsLandingSeen: false,
   marsWon: false,
+  jupiterUnlocked: false,
+  jupiterWon: false,
+  neptuneUnlocked: false,
+  neptuneWon: false,
+  voidUnlocked: false,
   currentWorld: 'earth',
   marsBusinesses: {
     dustMine: 0,
@@ -22,6 +47,27 @@ const DEFAULT_GAME = {
     relicExchange: 0,
     orbitalPort: 0,
     terraforming: 0
+  },
+  jupiterGame: {
+    heroes: 0,
+    heroLevel: 0,
+    keisDefeated: 0,
+    keisDefeatedTotal: 0
+  },
+  neptuneGame: {
+    excavators: 0,
+    drillLevel: 0,
+    diamondStock: {},
+    memeCoin: { created: false, level: 0, treasury: 0, history: [] },
+    bankingApp: { created: false, level: 0, treasury: 0, nodes: null, usage: 100 }
+  },
+  voidGame: {
+    revenueLevel: 0,
+    intervalLevel: 0,
+    cycles: 0,
+    lastPayout: 0,
+    consoleCompany: { founded: false, level: 0, features: { hardware: 0, studio: 0, ecosystem: 0 } },
+    carCompany: { founded: false, level: 0, features: { engine: 0, aero: 0, factory: 0 } }
   },
   totalLosses: 0,
   costs: { disguise: 15, vent: 100 },
@@ -136,7 +182,8 @@ function saveSus(newAmount) {
   game.susPoints = Math.max(0, newAmount);
   saveSharedGame();
   const el = document.getElementById('global-sus') || document.getElementById('balance-display');
-  if (el) el.innerText = game.susPoints.toLocaleString();
+  if (el) el.innerText = formatCompactNumber(game.susPoints);
+  if (el) el.title = game.susPoints.toLocaleString();
 }
 
 function hasRelic(id) {

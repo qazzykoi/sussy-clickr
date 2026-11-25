@@ -1,8 +1,11 @@
 const CACHE_PREFIX = 'sussy-clicker-cache-';
-const CACHE_NAME = `${CACHE_PREFIX}v6`;
+const CACHE_NAME = `${CACHE_PREFIX}v8`;
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
+  './void-3002.html',
+  './planet-worlds.css',
+  './planet-worlds.js',
   './casino.html',
   './stocks.html',
   './team-manager.html',

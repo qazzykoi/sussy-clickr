@@ -158,6 +158,9 @@
         .world-tabs button { min-width: 132px; padding: 10px 15px; border: 1px solid var(--border); border-radius: 7px; background: var(--panel); color: var(--muted); font-weight: 800; cursor: pointer; }
         .world-tabs button[aria-pressed="true"] { border-color: #ff4d43; background: #4a211e; color: #fff; }
         .world-tabs button:disabled { opacity: .48; cursor: not-allowed; }
+        .planet-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: -5px auto 22px; }
+        .planet-links a { min-width: 150px; padding: 9px 13px; border: 1px solid var(--border); border-radius: 7px; background: var(--panel); color: var(--text); font-size: 11px; font-weight: 800; }
+        .planet-links a[aria-disabled="true"] { color: #697783; opacity: .6; }
         .world-goal { max-width: 760px; margin: 0 auto 22px; padding: 15px 18px; border: 1px solid #704137; border-radius: 8px; background: linear-gradient(110deg, #281916, #18171b); text-align: left; }
         .world-goal-heading { display: flex; justify-content: space-between; gap: 12px; color: #ffb183; font-size: 12px; font-weight: 850; }
         .world-goal-heading span:last-child { color: #fff; font-variant-numeric: tabular-nums; }
@@ -262,6 +265,9 @@
     <nav class="world-tabs" aria-label="World selection">
         <button id="earth-tab" onclick="switchWorld('earth')" aria-pressed="true">🌍 EARTH</button>
         <button id="mars-tab" onclick="switchWorld('mars')" aria-pressed="false" disabled title="Reach 1B SUS to unlock Mars">🔒 MARS</button>
+    </nav>
+    <nav class="planet-links" aria-label="Planet industries">
+        <a id="void-link" href="void-3002.html" aria-disabled="true" title="Conquer Mars to unlock Void">🔒 VOID 3002</a>
     </nav>
 
     <section id="earth-world">
@@ -459,6 +465,7 @@
         }
 
         function checkWorldUnlock() {
+            let progressionChanged = false;
             if (!game.marsUnlocked && game.susPoints >= EARTH_GOAL) {
                 game.worldOneWon = true;
                 game.marsUnlocked = true;
@@ -469,6 +476,11 @@
                 playSound('win');
                 saveGame();
             }
+            if (game.marsWon && !game.voidUnlocked) {
+                game.voidUnlocked = true;
+                progressionChanged = true;
+            }
+            if (progressionChanged) saveGame();
             if (game.marsUnlocked && !game.marsLandingSeen) showMarsLanding();
         }
 
@@ -653,14 +665,15 @@
 
         function updateUI() {
             checkWorldUnlock();
-            document.getElementById('sus-points').innerText = Math.floor(game.susPoints).toLocaleString();
-            document.getElementById('sps-display').innerText = Math.floor(getSPS()).toLocaleString();
-            document.getElementById('click-power-display').innerText = getClickPower().toLocaleString();
+            document.getElementById('sus-points').innerText = formatCompactNumber(game.susPoints);
+            document.getElementById('sus-points').title = Math.floor(game.susPoints).toLocaleString();
+            document.getElementById('sps-display').innerText = formatCompactNumber(getSPS());
+            document.getElementById('click-power-display').innerText = formatCompactNumber(getClickPower());
             document.getElementById('prestige-display').innerText = game.prestigeMultiplier;
             document.getElementById('aura-bonus-display').innerText = getAuraBonus();
             document.getElementById('stat-losses').innerText = game.totalLosses;
-            document.getElementById('cost-disguise').innerText = game.costs.disguise.toLocaleString();
-            document.getElementById('cost-vent').innerText = game.costs.vent.toLocaleString();
+            document.getElementById('cost-disguise').innerText = formatCompactNumber(game.costs.disguise);
+            document.getElementById('cost-vent').innerText = formatCompactNumber(game.costs.vent);
             document.getElementById('btn-disguise').disabled = (game.susPoints < game.costs.disguise);
             document.getElementById('btn-vent').disabled = (game.susPoints < game.costs.vent);
             document.getElementById('btn-gamble').disabled = (game.susPoints <= 0);
@@ -685,6 +698,11 @@
                 ? 'MARS CONQUERED. The red planet belongs to the Sussy Empire.'
                 : 'Build the Martian empire and reach 1T SUS to win Mars.';
             updateMarsBusinessUI();
+            const voidLink = document.getElementById('void-link');
+            voidLink.innerText = game.voidUnlocked ? '◉ VOID 3002' : '🔒 VOID 3002';
+            voidLink.setAttribute('aria-disabled', String(!game.voidUnlocked));
+            voidLink.title = game.voidUnlocked ? 'Travel to Void 3002' : 'Conquer Mars to unlock Void';
+            voidLink.onclick = game.voidUnlocked ? null : (event) => event.preventDefault();
             
             let b1 = document.getElementById('badge-1');
             if(game.totalLosses >= 1) { b1.innerText = "[X] CODEROT CASUAL (+10%)"; b1.style.color = "#00ff66"; }

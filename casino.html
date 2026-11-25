@@ -257,7 +257,11 @@
 
     <script>
         // Initialize display value on page load
-        document.getElementById('global-sus').innerText = getSus();
+        const globalSus = document.getElementById('global-sus');
+        if (globalSus) {
+            globalSus.innerText = formatCompactNumber(getSus());
+            globalSus.title = getSus().toLocaleString();
+        }
         updatePowerScaleMode();
         updateTeamScaleMode();
 

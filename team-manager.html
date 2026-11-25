@@ -69,9 +69,11 @@
         .team-preview strong { color: var(--gold); }
         .rating-row { display: flex; justify-content: space-between; gap: 8px; margin-top: 7px; color: #c7d0de; font-size: 12px; }
         .owned-list { display: grid; gap: 8px; }
+        .owned-franchise { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
         .owned-button { width: 100%; padding: 11px 12px; border-color: var(--border); background: #0b1119; color: var(--text); text-align: left; }
         .owned-button.active { border-color: #188d68; box-shadow: 0 0 0 2px #27d79a22; }
         .owned-button small { display: block; color: var(--muted); font-weight: 500; }
+        .sell-button { padding: 8px 10px; border-color: #754034; background: #39211e; color: #ffd2be; }
         .manager-content { min-height: 290px; }
         .empty-state { display: grid; min-height: 250px; place-items: center; color: var(--muted); text-align: center; }
         .club-heading { display: flex; flex-wrap: wrap; align-items: start; justify-content: space-between; gap: 10px; }
@@ -136,7 +138,7 @@
             <h1>Own the league. Run the season.</h1>
             <p>A separate sports management game. Matches are simulations, not bets.</p>
         </section>
-        <div class="notice"><strong>First franchise is free.</strong> Own one club in each of the five sports leagues and the new Sussy League. Extra franchises cost <span id="franchise-cost"></span> SUS from your shared wallet.</div>
+        <div class="notice"><strong>First franchise is free.</strong> Own one club in each of the five sports leagues and the new Sussy League. Extra franchises cost <span id="franchise-cost"></span> SUS from your shared wallet. Sell any franchise for <span id="franchise-sale-value"></span> SUS.</div>
         <p class="award-note">Season award: 3,000 SUS + 1,500 per win + 600 per draw. Playoffs add 30,000 for a semifinal finish, 75,000 for runner-up, or 150,000 for the champion. Awards scale with your shared wallet: x1 at 10M SUS, x2.5 at 100M, x6.3 at 1B, x16 at 10B, x40 at 100B, and x100 at 1T.</p>
         <div class="layout">
             <aside>
@@ -186,6 +188,7 @@
         const MANAGER_BACKUP_KEY = `${MANAGER_SAVE_KEY}_backup`;
         const MANAGER_SAVE_VERSION = 1;
         const FRANCHISE_COST = 10000;
+        const FRANCHISE_SALE_VALUE = Math.floor(FRANCHISE_COST / 2);
         const TRAINING_COST = 7500;
         const SEASON_REWARD_SCALE_BALANCE = 10000000;
         const SEASON_REWARD_SCALE_POWER = 0.4;
@@ -252,7 +255,7 @@
         let latestMatch = null;
 
         function emptyCareer() {
-            return { saveVersion: MANAGER_SAVE_VERSION, franchises: {}, nextId: 1, simulationSpeed: 1 };
+            return { saveVersion: MANAGER_SAVE_VERSION, franchises: {}, nextId: 1, simulationSpeed: 1, firstFranchiseClaimed: false };
         }
 
         function loadCareer() {
@@ -277,11 +280,13 @@
                     franchises: loaded.franchises,
                     nextId: Number.isInteger(loaded.nextId) && loaded.nextId > 0 ? loaded.nextId : 1,
                     simulationSpeed: SIMULATION_SPEEDS.includes(loaded.simulationSpeed) ? loaded.simulationSpeed : 1,
-                    saveVersion: Math.max(Number(loaded.saveVersion) || 0, MANAGER_SAVE_VERSION)
+                    saveVersion: Math.max(Number(loaded.saveVersion) || 0, MANAGER_SAVE_VERSION),
+                    firstFranchiseClaimed: loaded.firstFranchiseClaimed === true || Object.keys(loaded.franchises).length > 0
                 };
                 let migrated = key !== MANAGER_SAVE_KEY ||
                     !Number.isFinite(Number(loaded.saveVersion)) ||
-                    Number(loaded.saveVersion) < MANAGER_SAVE_VERSION;
+                    Number(loaded.saveVersion) < MANAGER_SAVE_VERSION ||
+                    typeof loaded.firstFranchiseClaimed !== 'boolean';
                 for (const franchise of Object.values(career.franchises)) {
                     migrated = migrateFranchise(franchise) || migrated;
                     if (!Number.isFinite(franchise.lastSimulatedAt)) {
@@ -328,10 +333,6 @@
 
         function leagueOwned(leagueId) {
             return Object.values(career.franchises).some(franchise => franchise.leagueId === leagueId);
-        }
-
-        function franchiseCount() {
-            return Object.keys(career.franchises).length;
         }
 
         function createRoster(teamId, strengths, teamIndex, leagueId) {
@@ -556,7 +557,9 @@
         }
 
         function updateWallet() {
-            document.getElementById('wallet-balance').textContent = getSus().toLocaleString();
+            const walletBalance = document.getElementById('wallet-balance');
+            walletBalance.textContent = formatCompactNumber(getSus());
+            walletBalance.title = getSus().toLocaleString();
         }
 
         function ratingAverage(strengths) {
@@ -596,7 +599,7 @@
             preview.innerHTML = `<strong>${escapeHtml(team.name)}</strong><div class="help">${escapeHtml(rank)} · Overall ${ratingAverage(strengths).toFixed(0)}</div>
                 <div class="rating-row"><span>Offense ${strengths.offense}</span><span>Defense ${strengths.defense}</span></div>
                 <div class="rating-row"><span>Speed ${strengths.speed}</span><span>Teamwork ${strengths.teamwork}</span></div>`;
-            const first = franchiseCount() === 0;
+            const first = !career.firstFranchiseClaimed;
             const price = first ? 0 : FRANCHISE_COST;
             button.disabled = getSus() < price || (customMode && Boolean(customNameError(league, customName)));
             button.textContent = first ? 'Claim first franchise · FREE' : `Buy franchise · ${FRANCHISE_COST.toLocaleString()} SUS`;
@@ -645,6 +648,8 @@
             const franchises = Object.values(career.franchises);
             document.getElementById('owned-empty').hidden = franchises.length > 0;
             for (const franchise of franchises) {
+                const item = document.createElement('div');
+                item.className = 'owned-franchise';
                 const button = document.createElement('button');
                 button.type = 'button';
                 button.className = `owned-button${franchise.id === selectedFranchiseId ? ' active' : ''}`;
@@ -654,8 +659,34 @@
                     latestMatch = null;
                     render();
                 });
-                list.append(button);
+                const sellButton = document.createElement('button');
+                sellButton.type = 'button';
+                sellButton.className = 'sell-button';
+                sellButton.textContent = `Sell · ${FRANCHISE_SALE_VALUE.toLocaleString()} SUS`;
+                sellButton.setAttribute('aria-label', `Sell ${franchise.teamName} for ${FRANCHISE_SALE_VALUE.toLocaleString()} SUS`);
+                sellButton.addEventListener('click', () => sellFranchise(franchise.id));
+                item.append(button, sellButton);
+                list.append(item);
             }
+        }
+
+        function sellFranchise(franchiseId) {
+            const franchise = career.franchises[franchiseId];
+            if (!franchise) return;
+            const saleConfirmed = window.confirm(
+                `Sell ${franchise.teamName} for ${FRANCHISE_SALE_VALUE.toLocaleString()} SUS? This permanently removes the franchise and its season history.`
+            );
+            if (!saleConfirmed) return;
+
+            delete career.franchises[franchiseId];
+            saveSus(getSus() + FRANCHISE_SALE_VALUE);
+            if (selectedFranchiseId === franchiseId) {
+                selectedFranchiseId = Object.keys(career.franchises)[0] || null;
+                latestMatch = null;
+            }
+            saveCareer();
+            render();
+            setStatus(`${franchise.teamName} sold for ${FRANCHISE_SALE_VALUE.toLocaleString()} SUS.`);
         }
 
         function getStandings(franchise) {
@@ -1122,6 +1153,7 @@
             updateWallet();
             document.getElementById('simulation-speed').value = String(career.simulationSpeed);
             document.getElementById('franchise-cost').textContent = FRANCHISE_COST.toLocaleString();
+            document.getElementById('franchise-sale-value').textContent = FRANCHISE_SALE_VALUE.toLocaleString();
             renderOwnedFranchises();
             updateAcquisitionOptions();
             renderClubManager();
@@ -1148,13 +1180,14 @@
                 ? createCustomTeam(league, customName)
                 : league.teams.find(candidate => candidate.name === teamSelect.value));
             if (!league || !team || leagueOwned(league.id)) return;
-            const cost = franchiseCount() === 0 ? 0 : FRANCHISE_COST;
+            const cost = career.firstFranchiseClaimed ? FRANCHISE_COST : 0;
             if (getSus() < cost) {
                 setStatus(`You need ${cost.toLocaleString()} SUS to claim this franchise.`);
                 return;
             }
             if (cost > 0) saveSus(getSus() - cost);
             const franchise = newFranchise(league, team);
+            career.firstFranchiseClaimed = true;
             career.nextId++;
             career.franchises[franchise.id] = franchise;
             selectedFranchiseId = franchise.id;
