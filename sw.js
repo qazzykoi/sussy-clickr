@@ -1,32 +1,35 @@
-const CACHE_NAME = 'sussy-clicker-cache-v5';
+const CACHE_PREFIX = 'sussy-clicker-cache-';
+const CACHE_NAME = `${CACHE_PREFIX}v6`;
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './casino.html',
   './stocks.html',
+  './team-manager.html',
+  './team-data.js',
+  './auto-update.js',
   './brainrot-theme.css',
   './data.js',
   './favicon.ico'
 ];
 
 self.addEventListener('install', (event) => {
-  self.skipWaiting(); // Forces the new service worker to take over immediately
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE))
+    caches.open(CACHE_NAME)
+      .then((cache) => cache.addAll(ASSETS_TO_CACHE))
+      .then(() => self.skipWaiting())
   );
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cache) => {
-          if (cache !== CACHE_NAME) {
-            return caches.delete(cache); // Deletes old cached versions
-          }
-        })
-      );
-    }).then(() => self.clients.claim()) // Immediately updates open tabs
+    caches.keys()
+      .then((cacheNames) => Promise.all(
+        cacheNames
+          .filter((cache) => cache.startsWith(CACHE_PREFIX) && cache !== CACHE_NAME)
+          .map((cache) => caches.delete(cache))
+      ))
+      .then(() => self.clients.claim())
   );
 });
 
@@ -47,6 +50,6 @@ self.addEventListener('fetch', (event) => {
         }
         return networkResponse;
       })
-      .catch(() => caches.match(event.request))
+      .catch(() => caches.open(CACHE_NAME).then((cache) => cache.match(event.request)))
   );
 });

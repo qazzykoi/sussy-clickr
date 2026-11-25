@@ -509,7 +509,11 @@
         function clearSave() {
             if(confirm("Permanently wipe your meta account?")) {
                 localStorage.removeItem(SAVE_KEY);
+                localStorage.removeItem(SAVE_BACKUP_KEY);
                 localStorage.removeItem('sussy_clicker_save_v4');
+                localStorage.removeItem('sussy_clicker_save');
+                localStorage.removeItem('playerData');
+                localStorage.removeItem('playerSusCurrency');
                 game = JSON.parse(JSON.stringify(DEFAULT_GAME));
                 saveGame();
                 updateUI();
@@ -778,25 +782,8 @@ function getServerGridSPS() {
             saveGame();
         });
 
-                // Register Service Worker for true offline PWA functionality
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(reg => {
-                        reg.update();
-                        navigator.serviceWorker.addEventListener('controllerchange', () => {
-                            if (!window.serviceWorkerReloaded) {
-                                window.serviceWorkerReloaded = true;
-                                window.location.reload();
-                            }
-                        });
-                        console.log('Sussy Service Worker Registered!', reg);
-                    })
-                    .catch(err => console.log('Service Worker setup failed:', err));
-            });
-        }
-
         buildMarsBusinesses();
         loadGame();
         updateUI();
     </script>
+    <script src="auto-update.js"></script>

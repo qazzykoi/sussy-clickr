@@ -183,6 +183,8 @@
     </main>
     <script>
         const MANAGER_SAVE_KEY = 'sussy_team_manager_v1';
+        const MANAGER_BACKUP_KEY = `${MANAGER_SAVE_KEY}_backup`;
+        const MANAGER_SAVE_VERSION = 1;
         const FRANCHISE_COST = 10000;
         const TRAINING_COST = 7500;
         const SEASON_REWARD_SCALE_BALANCE = 10000000;
@@ -250,23 +252,36 @@
         let latestMatch = null;
 
         function emptyCareer() {
-            return { franchises: {}, nextId: 1, simulationSpeed: 1 };
+            return { saveVersion: MANAGER_SAVE_VERSION, franchises: {}, nextId: 1, simulationSpeed: 1 };
         }
 
         function loadCareer() {
-            const raw = localStorage.getItem(MANAGER_SAVE_KEY);
-            if (!raw) return emptyCareer();
-            try {
-                const loaded = JSON.parse(raw);
-                if (!loaded || typeof loaded !== 'object' || !loaded.franchises || typeof loaded.franchises !== 'object') {
-                    throw new Error('Saved career has an invalid format.');
+            let foundInvalidSave = false;
+            for (const key of [MANAGER_SAVE_KEY, MANAGER_BACKUP_KEY]) {
+                const raw = localStorage.getItem(key);
+                if (!raw) continue;
+                let loaded;
+                try {
+                    loaded = JSON.parse(raw);
+                    if (!loaded || typeof loaded !== 'object' || Array.isArray(loaded) ||
+                        !loaded.franchises || typeof loaded.franchises !== 'object' || Array.isArray(loaded.franchises)) {
+                        throw new Error('Saved career has an invalid format.');
+                    }
+                } catch (error) {
+                    console.error('Unable to load team-manager career:', error);
+                    foundInvalidSave = true;
+                    continue;
                 }
                 const career = {
+                    ...loaded,
                     franchises: loaded.franchises,
                     nextId: Number.isInteger(loaded.nextId) && loaded.nextId > 0 ? loaded.nextId : 1,
-                    simulationSpeed: SIMULATION_SPEEDS.includes(loaded.simulationSpeed) ? loaded.simulationSpeed : 1
+                    simulationSpeed: SIMULATION_SPEEDS.includes(loaded.simulationSpeed) ? loaded.simulationSpeed : 1,
+                    saveVersion: Math.max(Number(loaded.saveVersion) || 0, MANAGER_SAVE_VERSION)
                 };
-                let migrated = false;
+                let migrated = key !== MANAGER_SAVE_KEY ||
+                    !Number.isFinite(Number(loaded.saveVersion)) ||
+                    Number(loaded.saveVersion) < MANAGER_SAVE_VERSION;
                 for (const franchise of Object.values(career.franchises)) {
                     migrated = migrateFranchise(franchise) || migrated;
                     if (!Number.isFinite(franchise.lastSimulatedAt)) {
@@ -274,16 +289,36 @@
                         migrated = true;
                     }
                 }
-                if (migrated) localStorage.setItem(MANAGER_SAVE_KEY, JSON.stringify(career));
+                if (migrated) {
+                    try {
+                        if (key !== MANAGER_BACKUP_KEY) localStorage.setItem(MANAGER_BACKUP_KEY, raw);
+                        localStorage.setItem(MANAGER_SAVE_KEY, JSON.stringify(career));
+                    } catch (error) {
+                        console.error('Unable to migrate team-manager career:', error);
+                    }
+                }
                 return career;
-            } catch (error) {
-                console.error('Unable to load team-manager career:', error);
-                document.getElementById('manager-status').textContent = 'Your saved career could not be loaded. Start a new franchise to create a fresh career.';
-                return emptyCareer();
             }
+            if (foundInvalidSave) {
+                document.getElementById('manager-status').textContent = 'Your saved career could not be loaded. Start a new franchise to create a fresh career.';
+            }
+            return emptyCareer();
         }
 
         function saveCareer() {
+            const previousSave = localStorage.getItem(MANAGER_SAVE_KEY);
+            if (previousSave) {
+                let parsedPrevious;
+                try {
+                    parsedPrevious = JSON.parse(previousSave);
+                } catch (error) {
+                    console.error('Unable to parse the previous team-manager save for backup:', error);
+                }
+                if (parsedPrevious && typeof parsedPrevious === 'object' && !Array.isArray(parsedPrevious)) {
+                    localStorage.setItem(MANAGER_BACKUP_KEY, previousSave);
+                }
+            }
+            career.saveVersion = Math.max(Number(career.saveVersion) || 0, MANAGER_SAVE_VERSION);
             localStorage.setItem(MANAGER_SAVE_KEY, JSON.stringify(career));
         }
 
@@ -1132,9 +1167,19 @@
             const speed = Number(event.target.value);
             if (SIMULATION_SPEEDS.includes(speed)) changeSimulationSpeed(speed);
         });
+        window.addEventListener('app:before-update', (event) => {
+            try {
+                saveCareer();
+            } catch (error) {
+                event.preventDefault();
+                console.error('Unable to save team-manager career before updating:', error);
+            }
+        });
+        window.addEventListener('beforeunload', saveCareer);
         window.addEventListener('focus', updateWallet);
         startAutomaticSimulation();
         render();
     </script>
+    <script src="auto-update.js"></script>
 </body>
 </html>
