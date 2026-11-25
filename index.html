@@ -149,14 +149,48 @@
         .gamble-panel .action-btn:hover:not(:disabled) { border-color: #f5c66b; background: #514021; }
         .prestige-panel .action-btn:hover:not(:disabled) { border-color: #b49bff; background: #3a2d59; }
         .action-btn:disabled { border-color: #28313a; background: #151b22; color: #53606a; cursor: not-allowed; }
-        #btn-win { color: var(--gold); }
         .achievement-panel { grid-column: span 2; }
         .badge-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(175px, 1fr)); gap: 2px 12px; margin-top: 12px; }
         .badge-list p { margin: 3px 0; color: #586574 !important; font-size: 10px !important; }
         .clear-btn { margin-top: 24px; padding: 8px 11px; border: 1px solid #3b424d; border-radius: 7px; background: transparent; color: #75808d; font-size: 10px; cursor: pointer; }
         .clear-btn:hover { border-color: #a84c59; color: #f1a0aa; }
-        .win-screen { display: none; position: fixed; inset: 0; z-index: 9999; place-items: center; padding: 24px; background: #05090eed; color: #ffdb7b; font-size: clamp(24px, 6vw, 58px); font-weight: 900; text-shadow: 0 0 30px #ffbf45aa; }
-        .win-screen[style*="block"] { display: grid !important; }
+        .world-tabs { display: flex; justify-content: center; gap: 8px; margin: 0 auto 18px; }
+        .world-tabs button { min-width: 132px; padding: 10px 15px; border: 1px solid var(--border); border-radius: 7px; background: var(--panel); color: var(--muted); font-weight: 800; cursor: pointer; }
+        .world-tabs button[aria-pressed="true"] { border-color: #ff4d43; background: #4a211e; color: #fff; }
+        .world-tabs button:disabled { opacity: .48; cursor: not-allowed; }
+        .world-goal { max-width: 760px; margin: 0 auto 22px; padding: 15px 18px; border: 1px solid #704137; border-radius: 8px; background: linear-gradient(110deg, #281916, #18171b); text-align: left; }
+        .world-goal-heading { display: flex; justify-content: space-between; gap: 12px; color: #ffb183; font-size: 12px; font-weight: 850; }
+        .world-goal-heading span:last-child { color: #fff; font-variant-numeric: tabular-nums; }
+        .goal-track { height: 8px; overflow: hidden; margin-top: 10px; border-radius: 5px; background: #090a0d; }
+        .goal-fill { width: 0; height: 100%; background: linear-gradient(90deg, #fb653f, #ffd166); transition: width .3s ease; }
+        .world-goal p { margin: 8px 0 0; color: var(--muted); font-size: 11px; }
+        .mars-heading { margin: 0 0 16px; color: #ff967b; font-size: 26px; }
+        .mars-intro { margin: 0 auto 18px; color: var(--muted); font-size: 12px; }
+        .mars-businesses { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 13px; text-align: left; }
+        .mars-business { display: flex; min-height: 190px; flex-direction: column; justify-content: space-between; padding: 16px; border: 1px solid #6c3930; border-radius: 8px; background: linear-gradient(145deg, #291a1a, #17151a); }
+        .mars-business h3 { margin: 0 0 7px; color: #ffd2be; font-size: 15px; }
+        .mars-business p { margin: 5px 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
+        .mars-business p strong { color: #fff; }
+        .mars-business .action-btn { border-color: #754034; background: #39211e; }
+        .mars-business .action-btn:hover:not(:disabled) { border-color: #ff8a65; background: #623126; }
+        .landing-overlay { position: fixed; inset: 0; z-index: 9999; display: grid; grid-template-rows: auto minmax(200px, 1fr) auto; align-items: center; justify-items: center; padding: 28px 20px; overflow: hidden; background: radial-gradient(ellipse at 50% 70%, #251018, #080a0f 65%); }
+        .landing-overlay[hidden] { display: none; }
+        .landing-copy { z-index: 2; text-align: center; }
+        .landing-copy h2 { margin: 0; color: #ffb278; font-size: clamp(25px, 6vw, 42px); }
+        .landing-copy p, #landing-status { color: #d3c7c4; font-size: 13px; }
+        .landing-scene { position: relative; width: min(760px, 100%); height: min(48vh, 360px); min-height: 210px; overflow: hidden; }
+        .landing-stars { position: absolute; inset: 0 0 28%; background-image: radial-gradient(#fff 1px, transparent 1.5px), radial-gradient(#ffbd9c 1px, transparent 1.5px); background-position: 0 0, 27px 38px; background-size: 83px 71px, 109px 93px; opacity: .75; }
+        .mars-planet { position: absolute; right: 7%; bottom: -31%; width: min(360px, 70vw); aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 34% 25%, #f6a276, #b94232 48%, #5b1c22 78%); box-shadow: -25px -20px 70px #ef5c3a55; }
+        .mars-planet::before { position: absolute; inset: 34% 15% auto 45%; height: 8%; border-radius: 50%; background: #762c2a88; content: ""; transform: rotate(-18deg); }
+        .landing-ship { position: absolute; top: 20%; left: 3%; z-index: 2; font-size: clamp(42px, 9vw, 72px); filter: drop-shadow(0 5px 14px #ffb966); animation: mars-crash 3.2s cubic-bezier(.35,.05,.8,.55) forwards; }
+        .impact-flash { position: absolute; right: 28%; bottom: 23%; width: 12px; height: 12px; border-radius: 50%; background: #fff1b0; box-shadow: 0 0 0 0 #ff6d43; opacity: 0; animation: impact-burst .7s ease-out 2.8s forwards; }
+        @keyframes mars-crash { 0% { left: 3%; top: 20%; transform: rotate(-24deg); } 58% { left: 38%; top: 35%; transform: rotate(4deg); } 78% { left: 52%; top: 54%; transform: rotate(55deg) scale(.9); } 100% { left: 58%; top: 64%; transform: rotate(115deg) scale(.48); opacity: .15; } }
+        @keyframes impact-burst { 20% { opacity: 1; box-shadow: 0 0 0 8px #ff6d43aa; } 100% { opacity: 0; box-shadow: 0 0 0 80px #ff6d4300; } }
+        #enter-mars-btn { min-width: 180px; padding: 12px 18px; border: 1px solid #ff9368; border-radius: 7px; background: #732f25; color: #fff; font-weight: 850; cursor: pointer; }
+        #enter-mars-btn[hidden] { display: none; }
+        body.mars-world-active { background: radial-gradient(ellipse at 50% -25%, #5b211d 0, #110d12 58%); }
+        body.mars-world-active .stats-container { border-color: #a84b37; }
+        body.mars-world-active .main-display > span { text-shadow: 0 0 26px #ff754c77; }
         .chart-box { position: relative; height: 80px; overflow: hidden; margin-top: 10px; border: 1px solid var(--border); border-radius: 8px; background: #0b1118; }
         .chart-box svg { width: 100%; height: 100%; }
         @media (max-width: 640px) {
@@ -190,10 +224,26 @@
             <a class="current" href="index.html">Clicker</a>
             <a href="stocks.html">📈 Markets</a>
             <a href="casino.html">🎰 Casino</a>
+            <a href="team-manager.html">🏆 Team Manager</a>
         </nav>
     </header>
 
-    <div id="win-popup" class="win-screen">📮 GYATT! YOU ARE THE ULTIMATE IMPOSTOR! YOU WIN! 📮</div>
+    <div id="mars-landing" class="landing-overlay" role="dialog" aria-modal="true" aria-labelledby="landing-title" hidden>
+        <div class="landing-copy">
+            <h2 id="landing-title">MARS UNLOCKED</h2>
+            <p>1B SUS secured. The crew is making an unscheduled landing.</p>
+        </div>
+        <div class="landing-scene" aria-hidden="true">
+            <div class="landing-stars"></div>
+            <div class="mars-planet"></div>
+            <div class="landing-ship" onanimationend="finishMarsLanding()">🚀</div>
+            <div class="impact-flash"></div>
+        </div>
+        <div class="landing-copy">
+            <p id="landing-status" aria-live="polite">Approach vector locked...</p>
+            <button id="enter-mars-btn" onclick="enterMars()" hidden>TOUCH DOWN ON MARS</button>
+        </div>
+    </div>
 
     <main class="game-shell">
         <section class="hero-heading">
@@ -207,6 +257,18 @@
         <div class="sub-display">
             SPS: $<span id="sps-display">0</span> | Multiplier: <span id="prestige-display">1</span>x | Aura Bonus: +<span id="aura-bonus-display">0</span>%
         </div>
+    </div>
+
+    <nav class="world-tabs" aria-label="World selection">
+        <button id="earth-tab" onclick="switchWorld('earth')" aria-pressed="true">🌍 EARTH</button>
+        <button id="mars-tab" onclick="switchWorld('mars')" aria-pressed="false" disabled title="Reach 1B SUS to unlock Mars">🔒 MARS</button>
+    </nav>
+
+    <section id="earth-world">
+    <div class="world-goal" aria-label="Earth world objective">
+        <div class="world-goal-heading"><span>EARTH WORLD · FIRST CONTACT</span><span id="world-one-amount">0 / 1B SUS</span></div>
+        <div class="goal-track"><div id="world-one-progress" class="goal-fill"></div></div>
+        <p>Build your empire and reach 1B SUS to win Earth and unlock Mars.</p>
     </div>
 
     <div class="clicker-stage">
@@ -230,7 +292,6 @@
             <div>
                 <h3>Vent Shortcut</h3>
                 <p>Generates passive income streams.</p>
-                <p>Current Output: +$<span id="vent-power-display">0</span>/sec</p>
             </div>
             <button id="btn-vent" class="action-btn" onclick="buyVent()">Cost: $<span id="cost-vent">100</span></button>
         </div>
@@ -273,14 +334,19 @@
             </div>
         </div>
 
-        <div class="panel gamble-panel" style="grid-column: 1 / -1; border-color: #ff3333;">
-            <div>
-                <h3>🏆 BUY THE SUSSY WIN CONDITION</h3>
-                <p>10% Choice drop. Price climbs if you blank!</p>
-            </div>
-            <button id="btn-win" class="action-btn" onclick="gambleWinCondition()" style="font-size: 1.5rem; color: #ffcc00;">BUY WIN TICKET (Price: $<span id="win-cost-display">1,000,000,000</span>)</button>
-        </div>
     </div>
+    </section>
+
+    <section id="mars-world" hidden>
+        <h2 class="mars-heading">🔴 MARS: THE SUSSY FRONTIER</h2>
+        <p class="mars-intro">Six new industries. One red planet. Your Earth wallet still spends here.</p>
+        <div class="world-goal" aria-label="Mars world objective">
+            <div class="world-goal-heading"><span>MARS WORLD · FINAL FRONTIER</span><span id="mars-world-amount">0 / 1T SUS</span></div>
+            <div class="goal-track"><div id="mars-world-progress" class="goal-fill"></div></div>
+            <p id="mars-world-status">Build the Martian empire and reach 1T SUS to win Mars.</p>
+        </div>
+        <div id="mars-businesses" class="mars-businesses"></div>
+    </section>
 
     <button class="clear-btn" onclick="clearSave()">Wipe Save File</button>
     </main>
@@ -318,6 +384,108 @@
         }
 
         let priceHistory = [];
+        const EARTH_GOAL = 1000000000;
+        const MARS_GOAL = 1000000000000;
+        const MARS_BUSINESS_TYPES = [
+            { id: 'dustMine', icon: '⛏️', name: 'Red Dust Mine', detail: 'Strip-mine spicy iron and suspiciously valuable space rocks.', cost: 50000000000, baseSps: 25000000 },
+            { id: 'domeResort', icon: '🏨', name: 'Dome Resort', detail: 'Luxury low-gravity vacations with premium oxygen packages.', cost: 250000000000, baseSps: 200000000 },
+            { id: 'roverRacing', icon: '🏎️', name: 'Rover Racing League', detail: 'High-speed crater circuits and extremely questionable pit crews.', cost: 2000000000000, baseSps: 3000000000 },
+            { id: 'relicExchange', icon: '👽', name: 'Alien Relic Exchange', detail: 'Trade artifacts, rumors, and one definitely real UFO receipt.', cost: 20000000000000, baseSps: 50000000000 },
+            { id: 'orbitalPort', icon: '🛰️', name: 'Orbital Cargo Port', detail: 'Ship interplanetary goods before the next solar-system trend.', cost: 200000000000000, baseSps: 1000000000000 },
+            { id: 'terraforming', icon: '🌱', name: 'Terraforming Syndicate', detail: 'Sell breathable air futures. The atmosphere is not included.', cost: 2000000000000000, baseSps: 25000000000000 }
+        ];
+        let landingActive = false;
+
+        function getMarsSPS() {
+            return MARS_BUSINESS_TYPES.reduce((total, business) => {
+                const owned = Math.max(0, Number(game.marsBusinesses[business.id]) || 0);
+                return total + business.baseSps * (Math.pow(1.6, owned) - 1) / 0.6;
+            }, 0);
+        }
+
+        function buildMarsBusinesses() {
+            const container = document.getElementById('mars-businesses');
+            container.innerHTML = MARS_BUSINESS_TYPES.map(business => `
+                <article class="mars-business">
+                    <div>
+                        <h3>${business.icon} ${business.name}</h3>
+                        <p>${business.detail}</p>
+                        <p id="mars-owned-${business.id}">Owned: 0</p>
+                        <p>Income: <strong id="mars-income-${business.id}">0</strong> SUS/sec</p>
+                    </div>
+                    <button id="mars-buy-${business.id}" class="action-btn" onclick="buyMarsBusiness('${business.id}')">Establish · <span id="mars-cost-${business.id}">0</span> SUS</button>
+                </article>
+            `).join('');
+        }
+
+        function buyMarsBusiness(id) {
+            const business = MARS_BUSINESS_TYPES.find(item => item.id === id);
+            if (!business || !game.marsUnlocked) return;
+            const owned = Math.max(0, Number(game.marsBusinesses[id]) || 0);
+            const cost = Math.floor(business.cost * Math.pow(1.8, owned));
+            if (game.susPoints < cost) return;
+            game.susPoints -= cost;
+            game.marsBusinesses[id] = owned + 1;
+            playSound('click');
+            saveGame();
+            updateUI();
+        }
+
+        function updateMarsBusinessUI() {
+            MARS_BUSINESS_TYPES.forEach(business => {
+                const owned = Math.max(0, Number(game.marsBusinesses[business.id]) || 0);
+                const cost = Math.floor(business.cost * Math.pow(1.8, owned));
+                const income = business.baseSps * (Math.pow(1.6, owned) - 1) / 0.6;
+                document.getElementById(`mars-owned-${business.id}`).innerText = `Owned: ${owned.toLocaleString()}`;
+                document.getElementById(`mars-income-${business.id}`).innerText = Math.floor(income).toLocaleString();
+                document.getElementById(`mars-cost-${business.id}`).innerText = cost.toLocaleString();
+                document.getElementById(`mars-buy-${business.id}`).disabled = !game.marsUnlocked || game.susPoints < cost;
+            });
+        }
+
+        function finishMarsLanding() {
+            if (!landingActive || game.marsLandingSeen) return;
+            game.marsLandingSeen = true;
+            document.getElementById('landing-status').innerText = 'Impact confirmed. The crew is alive-ish.';
+            document.getElementById('enter-mars-btn').hidden = false;
+            saveGame();
+        }
+
+        function showMarsLanding() {
+            if (landingActive || game.marsLandingSeen) return;
+            landingActive = true;
+            document.getElementById('mars-landing').hidden = false;
+            playSound('win');
+        }
+
+        function checkWorldUnlock() {
+            if (!game.marsUnlocked && game.susPoints >= EARTH_GOAL) {
+                game.worldOneWon = true;
+                game.marsUnlocked = true;
+                saveGame();
+            }
+            if (game.marsUnlocked && !game.marsWon && game.susPoints >= MARS_GOAL) {
+                game.marsWon = true;
+                playSound('win');
+                saveGame();
+            }
+            if (game.marsUnlocked && !game.marsLandingSeen) showMarsLanding();
+        }
+
+        function switchWorld(world) {
+            if (world !== 'earth' && world !== 'mars') return;
+            if (world === 'mars' && !game.marsUnlocked) return;
+            game.currentWorld = world;
+            saveGame();
+            updateUI();
+        }
+
+        function enterMars() {
+            document.getElementById('mars-landing').hidden = true;
+            game.currentWorld = 'mars';
+            saveGame();
+            updateUI();
+        }
 
         function loadGame() {
             if (game.lastSaved > 0) {
@@ -361,11 +529,12 @@
             if (game.totalLosses >= 1000) bonus += 5000;
             if (game.totalLosses >= 2000) bonus += 10000;
             if (game.totalLosses >= 5000) bonus += 20000;
+            if (game.totalLosses >= 10000) bonus += 50000;
             return bonus;
         }
 
         function getClickPower() { return game.basePointsPerClick * game.prestigeMultiplier * (1 + getAuraBonus()/100); }
-        function getSPS() { return game.baseAutoSusPerSecond * game.prestigeMultiplier * (1 + getAuraBonus()/100); }
+        function getSPS() { return (game.baseAutoSusPerSecond + getMarsSPS()) * game.prestigeMultiplier * (1 + getAuraBonus()/100); }
 
         function clickSussy() {
             playSound('click');
@@ -415,15 +584,6 @@
         }
 
 
-        function gambleWinCondition() {
-            if (game.susPoints >= game.winPrice) {
-                game.susPoints -= game.winPrice;
-                if (Math.random() > 0.10) { playSound('win'); document.getElementById('win-popup').style.display = 'block'; }
-                else { game.winPrice = Math.ceil(game.winPrice * 1.025); playSound('lose'); alert("❌ BRO GOT SCAMMED! Ticket was blank. Cost escalated!"); }
-                updateUI();
-            }
-        }
-
         function prestige() {
             if (game.susPoints >= 100000) {
                 let gain = Math.floor(Math.log10(game.susPoints) - 4); if (gain < 1) gain = 1;
@@ -448,18 +608,47 @@
             { text: "🏰 A CODEROT KNIGHT CHALLENGES YOU TO A DUEL! 🏰", winMsg: "⚔️ VICTORY! You won the duel and got their loot!", loseMsg: "🛡️ DEFEATED! The knight bested you and took your cash!" },
         ];
 
+        function getEncounterProgress() {
+            const balance = Math.max(500, game.susPoints);
+            const goal = game.currentWorld === 'mars' ? MARS_GOAL : EARTH_GOAL;
+            return Math.min(1, Math.log10(balance / 500) / Math.log10(goal / 500));
+        }
+
+        function getEncounterFrequencyChance() {
+            const marsBonus = game.currentWorld === 'mars' ? 0.02 : 0;
+            return Math.min(0.12, 0.02 + getEncounterProgress() * 0.08 + marsBonus);
+        }
+
+        function getEncounterWinChance() {
+            const marsBonus = game.currentWorld === 'mars' ? 0.05 : 0;
+            return Math.min(0.60, 0.35 + getEncounterProgress() * 0.20 + marsBonus);
+        }
+
+        function getEncounterWagerRate() {
+            const progress = getEncounterProgress();
+            const marsRisk = game.currentWorld === 'mars' ? 0.04 : 0;
+            const minimum = 0.05 + progress * 0.05 + marsRisk;
+            const range = 0.07 + progress * 0.13;
+            return Math.min(0.35, minimum + Math.random() * range);
+        }
+
         setInterval(() => {
-            if (game.susPoints > 500 && Math.random() < 0.25) {
-                let wager = Math.floor(game.susPoints * 0.25); let s = slangEncounters[Math.floor(Math.random() * slangEncounters.length)];
-                if (confirm(`${s.text}\n\nWager 25% ($${wager.toLocaleString()})?`)) {
-                    if (Math.random() < 0.45) { game.susPoints += wager; playSound('win'); alert(s.winMsg); }
-                    else { game.susPoints -= wager; if(game.susPoints <= 0) game.totalLosses++; playSound('lose'); alert(s.loseMsg); }
+            const frequencyChance = getEncounterFrequencyChance();
+            if (game.susPoints > 500 && Math.random() < frequencyChance) {
+                const wagerRate = getEncounterWagerRate();
+                const winChance = getEncounterWinChance();
+                const wager = Math.floor(game.susPoints * wagerRate);
+                const encounter = slangEncounters[Math.floor(Math.random() * slangEncounters.length)];
+                if (confirm(`${encounter.text}\n\nSpawn chance: ${Math.round(frequencyChance * 100)}% every 15 seconds.\nWin chance: ${Math.round(winChance * 100)}%.\nWager ${Math.round(wagerRate * 100)}% ($${wager.toLocaleString()})?`)) {
+                    if (Math.random() < winChance) { game.susPoints += wager; playSound('win'); alert(encounter.winMsg); }
+                    else { game.susPoints -= wager; if(game.susPoints <= 0) game.totalLosses++; playSound('lose'); alert(encounter.loseMsg); }
                     updateUI();
                 }
             }
         }, 15000);
 
         function updateUI() {
+            checkWorldUnlock();
             document.getElementById('sus-points').innerText = Math.floor(game.susPoints).toLocaleString();
             document.getElementById('sps-display').innerText = Math.floor(getSPS()).toLocaleString();
             document.getElementById('click-power-display').innerText = getClickPower().toLocaleString();
@@ -468,11 +657,30 @@
             document.getElementById('stat-losses').innerText = game.totalLosses;
             document.getElementById('cost-disguise').innerText = game.costs.disguise.toLocaleString();
             document.getElementById('cost-vent').innerText = game.costs.vent.toLocaleString();
-            document.getElementById('win-cost-display').innerText = game.winPrice.toLocaleString();
             document.getElementById('btn-disguise').disabled = (game.susPoints < game.costs.disguise);
             document.getElementById('btn-vent').disabled = (game.susPoints < game.costs.vent);
-            document.getElementById('btn-win').disabled = (game.susPoints < game.winPrice);
             document.getElementById('btn-gamble').disabled = (game.susPoints <= 0);
+
+            const marsUnlocked = Boolean(game.marsUnlocked);
+            const currentWorld = marsUnlocked && game.currentWorld === 'mars' ? 'mars' : 'earth';
+            game.currentWorld = currentWorld;
+            document.getElementById('earth-tab').setAttribute('aria-pressed', String(currentWorld === 'earth'));
+            const marsTab = document.getElementById('mars-tab');
+            marsTab.disabled = !marsUnlocked;
+            marsTab.innerText = marsUnlocked ? '🔴 MARS' : '🔒 MARS';
+            marsTab.title = marsUnlocked ? 'Switch to Mars' : 'Reach 1B SUS to unlock Mars';
+            marsTab.setAttribute('aria-pressed', String(currentWorld === 'mars'));
+            document.getElementById('earth-world').hidden = currentWorld !== 'earth';
+            document.getElementById('mars-world').hidden = currentWorld !== 'mars';
+            document.body.classList.toggle('mars-world-active', currentWorld === 'mars');
+            document.getElementById('world-one-amount').innerText = `${Math.floor(Math.min(game.susPoints, EARTH_GOAL)).toLocaleString()} / 1B SUS`;
+            document.getElementById('world-one-progress').style.width = `${Math.min(100, game.susPoints / EARTH_GOAL * 100)}%`;
+            document.getElementById('mars-world-amount').innerText = `${Math.floor(Math.min(game.susPoints, MARS_GOAL)).toLocaleString()} / 1T SUS`;
+            document.getElementById('mars-world-progress').style.width = `${Math.min(100, game.susPoints / MARS_GOAL * 100)}%`;
+            document.getElementById('mars-world-status').innerText = game.marsWon
+                ? 'MARS CONQUERED. The red planet belongs to the Sussy Empire.'
+                : 'Build the Martian empire and reach 1T SUS to win Mars.';
+            updateMarsBusinessUI();
             
             let b1 = document.getElementById('badge-1');
             if(game.totalLosses >= 1) { b1.innerText = "[X] CODEROT CASUAL (+10%)"; b1.style.color = "#00ff66"; }
@@ -496,6 +704,8 @@
             if(game.totalLosses >= 2000) { b10.innerText = "[X] TRANSCENDENT SUSSY (+10000%)"; b10.style.color = "#00ff66"; }
             let b11 = document.getElementById('badge-11');
             if(game.totalLosses >= 5000) { b11.innerText = "[X] ULTIMATE BRAINROT (+20000%)"; b11.style.color = "#00ff66"; }
+            let b12 = document.getElementById('badge-12');
+            if(game.totalLosses >= 10000) { b12.innerText = "[X] LORD OF ALL SUSSY (+50000%)"; b12.style.color = "#00ff66"; }
             
             if (game.susPoints >= 100000) {
                 let pending = Math.floor(Math.log10(game.susPoints) - 4);
@@ -586,6 +796,7 @@ function getServerGridSPS() {
             });
         }
 
+        buildMarsBusinesses();
         loadGame();
         updateUI();
     </script>

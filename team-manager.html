@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#160c2a">
+    <title>Sussy Franchise Manager</title>
+    <script src="data.js"></script>
+    <script src="team-data.js"></script>
+    <style>
+        :root {
+            color-scheme: dark;
+            --page: #090d14;
+            --panel: #111823;
+            --panel-raised: #151e2b;
+            --border: #263545;
+            --muted: #8290a3;
+            --text: #e8edf5;
+            --green: #27d79a;
+            --gold: #f5c66b;
+            --red: #fb6477;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            min-height: 100vh;
+            margin: 0;
+            background: radial-gradient(ellipse at 50% -20%, #282034 0, var(--page) 55%);
+            color: var(--text);
+            font: 14px/1.5 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+        a { color: #f2a0aa; font-weight: 650; text-decoration: none; }
+        button, select { font: inherit; }
+        button { cursor: pointer; }
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 18px;
+            border-bottom: 1px solid var(--border);
+        }
+        .brand { display: flex; align-items: center; gap: 11px; color: var(--text); font-weight: 850; }
+        .brand-mark { display: grid; width: 38px; height: 38px; place-items: center; border: 1px solid #63454c; border-radius: 12px; background: #2b1d26; font-size: 20px; }
+        .brand small { display: block; color: var(--muted); font-size: 9px; letter-spacing: .15em; }
+        nav { display: flex; flex-wrap: wrap; gap: 12px; }
+        .wallet { padding: 8px 12px; border: 1px solid var(--border); border-radius: 9px; background: var(--panel); color: var(--gold); font-weight: 800; white-space: nowrap; }
+        main { width: min(1120px, calc(100% - 32px)); margin: 28px auto 60px; }
+        .intro { margin-bottom: 18px; text-align: center; }
+        .intro h1 { margin: 0 0 5px; font-size: clamp(27px, 5vw, 40px); letter-spacing: -.04em; }
+        .intro p { margin: 0; color: var(--muted); }
+        .notice { margin: 18px 0; padding: 12px 15px; border: 1px solid #47556a; border-radius: 10px; background: #131c29; color: #c5d0df; text-align: center; }
+        .notice strong { color: var(--green); }
+        .award-note { margin: -8px 0 18px; color: var(--muted); font-size: 12px; text-align: center; }
+        .layout { display: grid; grid-template-columns: minmax(260px, .8fr) minmax(0, 1.5fr); gap: 16px; align-items: start; }
+        .panel { padding: 18px; border: 1px solid var(--border); border-radius: 14px; background: linear-gradient(145deg, #141d29, #0f151e 72%); }
+        h2 { margin: 0 0 12px; font-size: 18px; }
+        .field { display: grid; gap: 6px; margin: 12px 0; color: #c1ccda; font-size: 12px; font-weight: 700; }
+        select, input { width: 100%; padding: 10px 12px; border: 1px solid #354254; border-radius: 8px; background: #0b1119; color: var(--text); }
+        button { padding: 10px 14px; border: 1px solid #188d68; border-radius: 8px; background: linear-gradient(180deg, #33d7a1, #1ca779); color: #06160f; font-weight: 800; }
+        button:disabled { cursor: not-allowed; opacity: .45; }
+        button.secondary { border-color: #3a4657; background: #1a2533; color: var(--text); }
+        .full-button { width: 100%; margin-top: 8px; }
+        .muted, .help { color: var(--muted); }
+        .help { margin: 10px 0 0; font-size: 12px; }
+        .team-preview { margin: 14px 0; padding: 12px; border: 1px solid #263545; border-radius: 9px; background: #0b1119; }
+        .team-preview strong { color: var(--gold); }
+        .rating-row { display: flex; justify-content: space-between; gap: 8px; margin-top: 7px; color: #c7d0de; font-size: 12px; }
+        .owned-list { display: grid; gap: 8px; }
+        .owned-button { width: 100%; padding: 11px 12px; border-color: var(--border); background: #0b1119; color: var(--text); text-align: left; }
+        .owned-button.active { border-color: #188d68; box-shadow: 0 0 0 2px #27d79a22; }
+        .owned-button small { display: block; color: var(--muted); font-weight: 500; }
+        .manager-content { min-height: 290px; }
+        .empty-state { display: grid; min-height: 250px; place-items: center; color: var(--muted); text-align: center; }
+        .club-heading { display: flex; flex-wrap: wrap; align-items: start; justify-content: space-between; gap: 10px; }
+        .club-heading h2 { margin-bottom: 3px; }
+        .seed { color: var(--muted); font-size: 12px; }
+        .record-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 15px 0; }
+        .record-cell { padding: 10px; border: 1px solid var(--border); border-radius: 9px; background: #0b1119; text-align: center; }
+        .record-cell strong { display: block; color: var(--green); font-size: 20px; }
+        .record-cell span { color: var(--muted); font-size: 10px; text-transform: uppercase; }
+        .match-box { margin: 14px 0; padding: 15px; border: 1px solid #344155; border-radius: 10px; background: #0b1119; text-align: center; }
+        .match-box .score { margin: 8px 0; color: var(--gold); font-size: clamp(21px, 4vw, 30px); font-weight: 900; }
+        .controls { display: flex; flex-wrap: wrap; gap: 8px; }
+        .controls button { flex: 1 1 180px; }
+        .standings { width: 100%; margin-top: 12px; border-collapse: collapse; font-size: 12px; }
+        .standings th, .standings td { padding: 8px 6px; border-bottom: 1px solid #263545; text-align: left; }
+        .standings th { color: var(--muted); font-size: 10px; text-transform: uppercase; }
+        .table-wrap { overflow-x: auto; }
+        .standings tr.managed-team { color: var(--green); font-weight: 800; }
+        .roster-table { width: 100%; margin-top: 8px; border-collapse: collapse; font-size: 12px; }
+        .roster-table th, .roster-table td { padding: 8px 6px; border-bottom: 1px solid #263545; text-align: left; }
+        .roster-table th { color: var(--muted); font-size: 10px; text-transform: uppercase; }
+        .trade-controls { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: end; margin-top: 12px; }
+        .trade-controls .field { margin: 0; }
+        .tournament { margin: 16px 0; padding: 13px; border: 1px solid #67434b; border-radius: 10px; background: #1c1822; }
+        .tournament h3 { margin: 0 0 6px; color: var(--gold); }
+        .reward { color: var(--green); font-weight: 850; }
+        .log { display: grid; gap: 6px; max-height: 180px; overflow: auto; margin: 12px 0 0; padding: 0; list-style: none; }
+        .log li { padding: 7px 9px; border-radius: 7px; background: #0b1119; color: #c4cfdd; font-size: 12px; }
+        .status { min-height: 20px; margin: 12px 0 0; color: var(--gold); font-size: 12px; }
+        @media (max-width: 760px) {
+            .topbar { flex-wrap: wrap; }
+            .layout { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 480px) {
+            .topbar { padding: 14px; }
+            nav { order: 3; width: 100%; justify-content: center; }
+            main { width: min(100% - 22px, 600px); margin-top: 20px; }
+            .panel { padding: 14px; }
+            .record-grid { grid-template-columns: repeat(2, 1fr); }
+            .trade-controls { grid-template-columns: 1fr; }
+            .trade-controls button { width: 100%; }
+        }
+    </style>
+    <link rel="stylesheet" href="brainrot-theme.css">
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="index.html">
+            <span class="brand-mark">ඞ</span>
+            <span>SUSSY WORLD<small>FRANCHISE MANAGER</small></span>
+        </a>
+        <nav aria-label="Game navigation">
+            <a href="index.html">Clicker</a>
+            <a href="stocks.html">Stonks</a>
+            <a href="casino.html">Casino</a>
+            <a href="team-manager.html" aria-current="page">Team Manager</a>
+        </nav>
+        <div class="wallet">SHARED SUS <span id="wallet-balance">0</span></div>
+    </header>
+    <main>
+        <section class="intro">
+            <h1>Own the league. Run the season.</h1>
+            <p>A separate sports management game. Matches are simulations, not bets.</p>
+        </section>
+        <div class="notice"><strong>First franchise is free.</strong> Own one club in each of the five sports leagues and the new Sussy League. Extra franchises cost <span id="franchise-cost"></span> SUS from your shared wallet.</div>
+        <p class="award-note">Season award: 3,000 SUS + 1,500 per win + 600 per draw. Playoffs add 30,000 for a semifinal finish, 75,000 for runner-up, or 150,000 for the champion. Awards scale with your shared wallet: x1 at 10M SUS, x2.5 at 100M, x6.3 at 1B, x16 at 10B, x40 at 100B, and x100 at 1T.</p>
+        <div class="layout">
+            <aside>
+                <section class="panel">
+                    <h2>Your franchises</h2>
+                    <div class="owned-list" id="owned-list"></div>
+                    <p class="help" id="owned-empty">No club yet. Pick a league and claim your first franchise for free.</p>
+                </section>
+                <section class="panel" style="margin-top:16px">
+                    <h2>Start a franchise</h2>
+                    <label class="field" for="league-select">League
+                        <select id="league-select"></select>
+                    </label>
+                    <label class="field" for="team-select">Club
+                        <select id="team-select"></select>
+                    </label>
+                    <label class="field" for="custom-team-name" id="custom-team-name-field" hidden>Custom club name
+                        <input id="custom-team-name" type="text" maxlength="32" autocomplete="off" placeholder="Enter a unique club name">
+                    </label>
+                    <div class="team-preview" id="team-preview"></div>
+                    <button class="full-button" id="acquire-button" type="button">Claim franchise</button>
+                    <p class="help">You can own one franchise per league. Claiming a club does not place a wager.</p>
+                </section>
+                <section class="panel" style="margin-top:16px">
+                    <h2>Season simulation</h2>
+                    <label class="field" for="simulation-speed">Simulation speed
+                        <select id="simulation-speed">
+                            <option value="1">x1 · one game every 5 minutes</option>
+                            <option value="2">x2 · one game every 2.5 minutes</option>
+                            <option value="5">x5 · one game every 12 seconds</option>
+                            <option value="10">x10 · one game every 10 seconds</option>
+                            <option value="20">x20 · one game every second</option>
+                        </select>
+                    </label>
+                    <p class="help">Owned franchises simulate automatically, even while you are away. A completed season waits for you to start the next one.</p>
+                </section>
+            </aside>
+            <section class="panel manager-content" id="manager-panel">
+                <div class="empty-state" id="empty-manager">Choose one of your franchises to manage its season.</div>
+                <div id="club-manager" hidden></div>
+            </section>
+        </div>
+        <p class="status" id="manager-status" role="status" aria-live="polite"></p>
+    </main>
+    <script>
+        const MANAGER_SAVE_KEY = 'sussy_team_manager_v1';
+        const FRANCHISE_COST = 10000;
+        const TRAINING_COST = 7500;
+        const SEASON_REWARD_SCALE_BALANCE = 10000000;
+        const SEASON_REWARD_SCALE_POWER = 0.4;
+        const SIMULATION_INTERVALS = {
+            1: 5 * 60 * 1000,
+            2: 2.5 * 60 * 1000,
+            5: 12 * 1000,
+            10: 10 * 1000,
+            20: 1000
+        };
+        const SIMULATION_SPEEDS = Object.keys(SIMULATION_INTERVALS).map(Number);
+        const SEASON_GAMES_BY_LEAGUE = {
+            football: 10,
+            basketball: 32,
+            baseball: 64,
+            hockey: 32,
+            soccer: 38,
+            sussy: 7
+        };
+        const DEFAULT_SEASON_GAMES = 10;
+        const CUSTOM_TEAM_OPTION = '__custom__';
+        const TEAM_ATTRIBUTES = ['offense', 'defense', 'speed', 'teamwork'];
+        const PLAYER_POSITIONS = {
+            football: ['Quarterback', 'Running Back', 'Wide Receiver', 'Linebacker', 'Defensive Back'],
+            basketball: ['Point Guard', 'Shooting Guard', 'Small Forward', 'Power Forward', 'Center'],
+            baseball: ['Pitcher', 'Catcher', 'Infielder', 'Outfielder', 'Utility'],
+            hockey: ['Center', 'Winger', 'Defenseman', 'Goaltender', 'Utility'],
+            soccer: ['Goalkeeper', 'Defender', 'Midfielder', 'Winger', 'Striker'],
+            sussy: ['Captain', 'Rizzler', 'Speedster', 'Meme Lord', 'Wildcard']
+        };
+        const PLAYER_FIRST_NAMES = ['Alex', 'Jordan', 'Casey', 'Riley', 'Taylor', 'Morgan', 'Cameron', 'Avery', 'Quinn', 'Drew', 'Jamie', 'Reese'];
+        const PLAYER_LAST_NAMES = ['Parker', 'Bennett', 'Hayes', 'Brooks', 'Foster', 'Reed', 'Bailey', 'Price', 'Morgan', 'Ward', 'Ellis', 'Stone'];
+        const SUSSYLEAGUE_TEAMS = [
+            { name: 'Ohio Rizzlers', strengths: { offense: 78, defense: 70, speed: 82, teamwork: 67 } },
+            { name: 'Skibidi Strikers', strengths: { offense: 73, defense: 77, speed: 75, teamwork: 80 } },
+            { name: 'Fanum Tax FC', strengths: { offense: 82, defense: 63, speed: 74, teamwork: 72 } },
+            { name: 'Gyatt City Goblins', strengths: { offense: 68, defense: 82, speed: 70, teamwork: 76 } },
+            { name: 'Mewing Mountains', strengths: { offense: 75, defense: 73, speed: 78, teamwork: 85 } },
+            { name: 'Sigma Sharks', strengths: { offense: 86, defense: 69, speed: 79, teamwork: 74 } },
+            { name: 'Meme Machine', strengths: { offense: 65, defense: 75, speed: 84, teamwork: 70 } },
+            { name: 'Sus City', strengths: { offense: 72, defense: 80, speed: 68, teamwork: 83 } }
+        ];
+        const MANAGER_LEAGUES = [
+            ...TEAMSCALE_SPORTS.map(sport => ({
+                id: sport.id,
+                name: sport.name,
+                teams: TEAMSCALE_TEAMS.filter(team => team.sport === sport.name)
+            })),
+            {
+                id: 'sussy',
+                name: 'Sussy League',
+                teams: SUSSYLEAGUE_TEAMS.map(team => ({
+                    ...team,
+                    sport: 'Sussy League',
+                    league: 'Sussy League',
+                    rank: null,
+                    record: 'New league'
+                }))
+            }
+        ];
+        const LEAGUE_BY_ID = Object.fromEntries(MANAGER_LEAGUES.map(league => [league.id, league]));
+        let career = loadCareer();
+        let selectedFranchiseId = Object.keys(career.franchises)[0] || null;
+        let latestMatch = null;
+
+        function emptyCareer() {
+            return { franchises: {}, nextId: 1, simulationSpeed: 1 };
+        }
+
+        function loadCareer() {
+            const raw = localStorage.getItem(MANAGER_SAVE_KEY);
+            if (!raw) return emptyCareer();
+            try {
+                const loaded = JSON.parse(raw);
+                if (!loaded || typeof loaded !== 'object' || !loaded.franchises || typeof loaded.franchises !== 'object') {
+                    throw new Error('Saved career has an invalid format.');
+                }
+                const career = {
+                    franchises: loaded.franchises,
+                    nextId: Number.isInteger(loaded.nextId) && loaded.nextId > 0 ? loaded.nextId : 1,
+                    simulationSpeed: SIMULATION_SPEEDS.includes(loaded.simulationSpeed) ? loaded.simulationSpeed : 1
+                };
+                let migrated = false;
+                for (const franchise of Object.values(career.franchises)) {
+                    migrated = migrateFranchise(franchise) || migrated;
+                    if (!Number.isFinite(franchise.lastSimulatedAt)) {
+                        franchise.lastSimulatedAt = Date.now();
+                        migrated = true;
+                    }
+                }
+                if (migrated) localStorage.setItem(MANAGER_SAVE_KEY, JSON.stringify(career));
+                return career;
+            } catch (error) {
+                console.error('Unable to load team-manager career:', error);
+                document.getElementById('manager-status').textContent = 'Your saved career could not be loaded. Start a new franchise to create a fresh career.';
+                return emptyCareer();
+            }
+        }
+
+        function saveCareer() {
+            localStorage.setItem(MANAGER_SAVE_KEY, JSON.stringify(career));
+        }
+
+        function getCurrentFranchise() {
+            return career.franchises[selectedFranchiseId] || null;
+        }
+
+        function leagueOwned(leagueId) {
+            return Object.values(career.franchises).some(franchise => franchise.leagueId === leagueId);
+        }
+
+        function franchiseCount() {
+            return Object.keys(career.franchises).length;
+        }
+
+        function createRoster(teamId, strengths, teamIndex, leagueId) {
+            const offsets = [-6, -3, 0, 3, 6];
+            return PLAYER_POSITIONS[leagueId].map((position, slot) => ({
+                id: `${teamId}-player-${slot + 1}`,
+                name: `${PLAYER_FIRST_NAMES[(teamIndex * 3 + slot) % PLAYER_FIRST_NAMES.length]} ${PLAYER_LAST_NAMES[(teamIndex * 5 + slot * 2) % PLAYER_LAST_NAMES.length]}`,
+                position,
+                ratings: Object.fromEntries(TEAM_ATTRIBUTES.map((attribute, index) => [
+                    attribute,
+                    Math.max(40, Math.min(99, strengths[attribute] + offsets[(slot + index * 2) % offsets.length]))
+                ]))
+            }));
+        }
+
+        function calculateRosterStrengths(roster) {
+            return Object.fromEntries(TEAM_ATTRIBUTES.map(attribute => [
+                attribute,
+                Math.round(roster.reduce((sum, player) => sum + player.ratings[attribute], 0) / roster.length)
+            ]));
+        }
+
+        function createTeamState(team, id, index, isManaged, roster, leagueId) {
+            const players = roster || createRoster(id, team.strengths, index, leagueId);
+            return {
+                id,
+                name: team.name,
+                isManaged,
+                strengths: calculateRosterStrengths(players),
+                roster: players,
+                seedRank: team.rank || null,
+                wins: 0,
+                losses: 0,
+                draws: 0,
+                played: 0,
+                points: 0,
+                pointsFor: 0,
+                pointsAgainst: 0
+            };
+        }
+
+        function createLeagueSchedule(teams, leagueId, priorOpponents = []) {
+            const seasonLength = SEASON_GAMES_BY_LEAGUE[leagueId] || DEFAULT_SEASON_GAMES;
+            const managed = teams.find(team => team.isManaged);
+            const opponents = teams.filter(team => !team.isManaged);
+            if (managed && opponents.length) {
+                const usedOpponentIds = new Set();
+                const rounds = [];
+                for (let week = 0; week < seasonLength; week++) {
+                    if (week % opponents.length === 0) usedOpponentIds.clear();
+                    const available = opponents.filter(team => !usedOpponentIds.has(team.id));
+                    const forced = available.find(team => team.name === priorOpponents[week]);
+                    available.sort(() => Math.random() - 0.5);
+                    const opponent = forced || available[0];
+                    if (!opponent) break;
+                    usedOpponentIds.add(opponent.id);
+                    const remaining = opponents.filter(team => team.id !== opponent.id).map(team => team.id);
+                    remaining.sort(() => Math.random() - 0.5);
+                    if (remaining.length % 2 !== 0) remaining.push(null);
+                    const games = [week % 2 === 0
+                        ? { home: managed.id, away: opponent.id }
+                        : { home: opponent.id, away: managed.id }];
+                    for (let i = 0; i < remaining.length; i += 2) {
+                        if (remaining[i] && remaining[i + 1]) games.push({ home: remaining[i], away: remaining[i + 1] });
+                    }
+                    rounds.push(games);
+                }
+                return rounds;
+            }
+            const rotation = teams.map(team => team.id).sort(() => Math.random() - 0.5);
+            if (rotation.length % 2 !== 0) rotation.push(null);
+            const rounds = [];
+            for (let round = 0; round < rotation.length - 1; round++) {
+                const games = [];
+                for (let i = 0; i < rotation.length / 2; i++) {
+                    const home = rotation[i];
+                    const away = rotation[rotation.length - 1 - i];
+                    if (home && away) games.push({ home, away });
+                }
+                rounds.push(games);
+                const last = rotation.pop();
+                rotation.splice(1, 0, last);
+            }
+            return Array.from({ length: seasonLength }, (_, index) => {
+                const cycle = Math.floor(index / rounds.length);
+                const round = rounds[index % rounds.length];
+                return cycle % 2 === 0
+                    ? round
+                    : round.map(game => ({ home: game.away, away: game.home }));
+            });
+        }
+
+        function createSeasonData(league, franchise, managedRoster, priorOpponents = []) {
+            const teams = [];
+            let managedIndex = -1;
+            for (const [index, leagueTeam] of league.teams.entries()) {
+                if (leagueTeam.name === franchise.teamName) {
+                    managedIndex = index;
+                    teams.push(createTeamState({
+                        ...leagueTeam,
+                        strengths: franchise.strengths
+                    }, 'managed-team', index, true, managedRoster, league.id));
+                } else {
+                    teams.push(createTeamState(leagueTeam, `league-team-${index}`, index, false, null, league.id));
+                }
+            }
+            if (managedIndex === -1) {
+                teams.push(createTeamState({
+                    name: franchise.teamName,
+                    strengths: franchise.strengths,
+                    rank: null
+                }, 'managed-team', teams.length, true, managedRoster, league.id));
+            }
+            return {
+                teams,
+                schedule: createLeagueSchedule(teams, league.id, priorOpponents),
+                week: 0,
+                phase: 'regular',
+                playoffs: null
+            };
+        }
+
+        function managedTeam(franchise) {
+            return franchise.seasonData.teams.find(team => team.isManaged);
+        }
+
+        function syncFranchiseRecord(franchise) {
+            const team = managedTeam(franchise);
+            franchise.strengths = { ...team.strengths };
+            franchise.week = franchise.seasonData.week;
+            franchise.wins = team.wins;
+            franchise.losses = team.losses;
+            franchise.draws = team.draws;
+        }
+
+        function migrateFranchise(franchise) {
+            if (franchise.seasonData) {
+                const expectedLength = SEASON_GAMES_BY_LEAGUE[franchise.leagueId] || DEFAULT_SEASON_GAMES;
+                if (
+                    franchise.seasonData.phase === 'regular' &&
+                    Array.isArray(franchise.seasonData.schedule) &&
+                    franchise.seasonData.schedule.length !== expectedLength
+                ) {
+                    const priorOpponents = (Array.isArray(franchise.history) ? franchise.history : [])
+                        .slice(0, expectedLength)
+                        .reverse()
+                        .map(match => match.opponent)
+                        .filter(Boolean);
+                    franchise.seasonData.schedule = createLeagueSchedule(
+                        franchise.seasonData.teams,
+                        franchise.leagueId,
+                        priorOpponents
+                    );
+                    return true;
+                }
+                return false;
+            }
+            const league = LEAGUE_BY_ID[franchise.leagueId];
+            if (!league) return false;
+            const history = Array.isArray(franchise.history) ? franchise.history.slice(0, DEFAULT_SEASON_GAMES) : [];
+            const chronologicalHistory = [...history].reverse();
+            const previousWeek = Number.isInteger(franchise.week) ? Math.max(0, franchise.week) : 0;
+            const priorOpponents = chronologicalHistory.map(match => match.opponent).filter(Boolean);
+            franchise.seasonData = createSeasonData(league, franchise, null, priorOpponents);
+            const managed = managedTeam(franchise);
+            for (const match of chronologicalHistory) {
+                if (match.bye) continue;
+                const opponent = franchise.seasonData.teams.find(team => !team.isManaged && team.name === match.opponent);
+                const ownScore = Number(match.ownScore);
+                const opponentScore = Number(match.opponentScore);
+                if (!opponent || !Number.isFinite(ownScore) || !Number.isFinite(opponentScore)) continue;
+                recordRegularSeasonResult(managed, ownScore, opponentScore);
+                recordRegularSeasonResult(opponent, opponentScore, ownScore);
+            }
+            franchise.seasonData.week = Math.min(previousWeek, franchise.seasonData.schedule.length);
+            if (franchise.seasonData.week >= franchise.seasonData.schedule.length) beginPlayoffs(franchise);
+            syncFranchiseRecord(franchise);
+            return true;
+        }
+
+        function newFranchise(league, team) {
+            const franchise = {
+                id: `franchise-${career.nextId}`,
+                leagueId: league.id,
+                leagueName: league.name,
+                teamName: team.name,
+                strengths: { ...team.strengths },
+                seedRecord: team.record,
+                seedRank: team.rank,
+                season: 1,
+                lastSimulatedAt: Date.now(),
+                week: 0,
+                wins: 0,
+                losses: 0,
+                draws: 0,
+                history: []
+            };
+            franchise.seasonData = createSeasonData(league, franchise);
+            syncFranchiseRecord(franchise);
+            return franchise;
+        }
+
+        function createCustomTeam(league, name) {
+            const strengths = Object.fromEntries(TEAM_ATTRIBUTES.map(attribute => [
+                attribute,
+                Math.round(league.teams.reduce((total, team) => total + team.strengths[attribute], 0) / league.teams.length)
+            ]));
+            return { name, strengths, record: 'Custom entrant', rank: null };
+        }
+
+        function customNameError(league, name) {
+            if (name.length < 2) return 'Enter a club name with at least 2 characters.';
+            if (name.length > 32) return 'Club names must be 32 characters or fewer.';
+            if (league.teams.some(team => team.name.toLowerCase() === name.toLowerCase())) {
+                return 'Choose a name that is different from the existing clubs in this league.';
+            }
+            return '';
+        }
+
+        function setStatus(message) {
+            document.getElementById('manager-status').textContent = message;
+        }
+
+        function updateWallet() {
+            document.getElementById('wallet-balance').textContent = getSus().toLocaleString();
+        }
+
+        function ratingAverage(strengths) {
+            const values = Object.values(strengths);
+            return values.reduce((total, value) => total + value, 0) / values.length;
+        }
+
+        function escapeHtml(value) {
+            return String(value).replace(/[&<>"']/g, character => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            })[character]);
+        }
+
+        function updateTeamPreview() {
+            const league = LEAGUE_BY_ID[document.getElementById('league-select').value];
+            const teamSelect = document.getElementById('team-select');
+            const customMode = teamSelect.value === CUSTOM_TEAM_OPTION;
+            const customField = document.getElementById('custom-team-name-field');
+            const customName = document.getElementById('custom-team-name').value.trim();
+            const team = league && (customMode
+                ? createCustomTeam(league, customName || 'Your custom club')
+                : league.teams.find(candidate => candidate.name === teamSelect.value));
+            const preview = document.getElementById('team-preview');
+            const button = document.getElementById('acquire-button');
+            customField.hidden = !customMode;
+            if (!league || !team || leagueOwned(league.id)) {
+                preview.innerHTML = 'All available leagues already have a franchise.';
+                button.disabled = true;
+                return;
+            }
+            const strengths = team.strengths;
+            const rank = customMode ? 'Custom club · league-average ratings' : team.rank ? `League rank #${team.rank} · ${team.record}` : team.record;
+            preview.innerHTML = `<strong>${escapeHtml(team.name)}</strong><div class="help">${escapeHtml(rank)} · Overall ${ratingAverage(strengths).toFixed(0)}</div>
+                <div class="rating-row"><span>Offense ${strengths.offense}</span><span>Defense ${strengths.defense}</span></div>
+                <div class="rating-row"><span>Speed ${strengths.speed}</span><span>Teamwork ${strengths.teamwork}</span></div>`;
+            const first = franchiseCount() === 0;
+            const price = first ? 0 : FRANCHISE_COST;
+            button.disabled = getSus() < price || (customMode && Boolean(customNameError(league, customName)));
+            button.textContent = first ? 'Claim first franchise · FREE' : `Buy franchise · ${FRANCHISE_COST.toLocaleString()} SUS`;
+        }
+
+        function updateAcquisitionOptions() {
+            const leagueSelect = document.getElementById('league-select');
+            const teamSelect = document.getElementById('team-select');
+            const available = MANAGER_LEAGUES.filter(league => !leagueOwned(league.id));
+            const previousLeague = leagueSelect.value;
+            leagueSelect.innerHTML = '';
+            for (const league of available) {
+                const option = document.createElement('option');
+                option.value = league.id;
+                option.textContent = league.name;
+                leagueSelect.append(option);
+            }
+            if (available.some(league => league.id === previousLeague)) leagueSelect.value = previousLeague;
+            teamSelect.innerHTML = '';
+            const league = available.find(item => item.id === leagueSelect.value);
+            if (league) {
+                for (const team of league.teams) {
+                    const option = document.createElement('option');
+                    option.value = team.name;
+                    option.textContent = team.name;
+                    teamSelect.append(option);
+                }
+                const customOption = document.createElement('option');
+                customOption.value = CUSTOM_TEAM_OPTION;
+                customOption.textContent = 'Create a custom club…';
+                teamSelect.append(customOption);
+            }
+            leagueSelect.disabled = available.length === 0;
+            teamSelect.disabled = available.length === 0;
+            document.getElementById('acquire-button').disabled = available.length === 0;
+            if (!available.length) {
+                document.getElementById('team-preview').textContent = 'You own a franchise in every league.';
+            } else {
+                updateTeamPreview();
+            }
+        }
+
+        function renderOwnedFranchises() {
+            const list = document.getElementById('owned-list');
+            list.innerHTML = '';
+            const franchises = Object.values(career.franchises);
+            document.getElementById('owned-empty').hidden = franchises.length > 0;
+            for (const franchise of franchises) {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = `owned-button${franchise.id === selectedFranchiseId ? ' active' : ''}`;
+                button.innerHTML = `${escapeHtml(franchise.teamName)}<small>${escapeHtml(franchise.leagueName)} · ${escapeHtml(franchise.wins)}-${escapeHtml(franchise.losses)}-${escapeHtml(franchise.draws)}</small>`;
+                button.addEventListener('click', () => {
+                    selectedFranchiseId = franchise.id;
+                    latestMatch = null;
+                    render();
+                });
+                list.append(button);
+            }
+        }
+
+        function getStandings(franchise) {
+            return [...franchise.seasonData.teams].sort((a, b) =>
+                b.points - a.points ||
+                b.wins - a.wins ||
+                (b.pointsFor - b.pointsAgainst) - (a.pointsFor - a.pointsAgainst) ||
+                ratingAverage(b.strengths) - ratingAverage(a.strengths) ||
+                a.name.localeCompare(b.name)
+            );
+        }
+
+        function scoreFor(teamStrengths, opponentStrengths, base) {
+            const attack = teamStrengths.offense * 0.65 + teamStrengths.speed * 0.15 + teamStrengths.teamwork * 0.2;
+            const defense = opponentStrengths.defense;
+            const expected = base * (1 + (attack - 70) * 0.009 - (defense - 70) * 0.003);
+            const variation = (Math.random() - 0.5) * base * 0.48;
+            return Math.max(0, Math.round(expected + variation));
+        }
+
+        function recordRegularSeasonResult(team, score, opponentScore) {
+            team.played++;
+            team.pointsFor += score;
+            team.pointsAgainst += opponentScore;
+            if (score > opponentScore) {
+                team.wins++;
+                team.points += 3;
+            } else if (score < opponentScore) {
+                team.losses++;
+            } else {
+                team.draws++;
+                team.points++;
+            }
+        }
+
+        function simulateGame(franchise, homeId, awayId, playoff = false) {
+            const state = franchise.seasonData;
+            const home = state.teams.find(team => team.id === homeId);
+            const away = state.teams.find(team => team.id === awayId);
+            const baseScores = {
+                football: 23,
+                basketball: 110,
+                baseball: 4.5,
+                hockey: 3.2,
+                soccer: 1.7,
+                sussy: 4
+            };
+            const base = baseScores[franchise.leagueId] || 4;
+            let homeScore = scoreFor(home.strengths, away.strengths, base);
+            let awayScore = scoreFor(away.strengths, home.strengths, base);
+            if (homeScore === awayScore) {
+                if (playoff || ['basketball', 'baseball', 'hockey'].includes(franchise.leagueId)) {
+                    homeScore++;
+                } else if (franchise.leagueId === 'soccer' && Math.random() < 0.65) {
+                    if (Math.random() < 0.5) homeScore++;
+                    else awayScore++;
+                }
+            }
+            if (!playoff) {
+                recordRegularSeasonResult(home, homeScore, awayScore);
+                recordRegularSeasonResult(away, awayScore, homeScore);
+            }
+            return {
+                homeId,
+                awayId,
+                homeName: home.name,
+                awayName: away.name,
+                homeScore,
+                awayScore,
+                winnerId: homeScore === awayScore ? null : homeScore > awayScore ? homeId : awayId
+            };
+        }
+
+        function managedMatchSummary(match, weekLabel) {
+            const managedIsHome = match.homeId === 'managed-team';
+            const ownScore = managedIsHome ? match.homeScore : match.awayScore;
+            const opponentScore = managedIsHome ? match.awayScore : match.homeScore;
+            return {
+                week: weekLabel,
+                opponent: managedIsHome ? match.awayName : match.homeName,
+                ownScore,
+                opponentScore,
+                outcome: ownScore > opponentScore ? 'win' : ownScore < opponentScore ? 'loss' : 'draw'
+            };
+        }
+
+        function beginPlayoffs(franchise) {
+            const standings = getStandings(franchise);
+            const playoffSeeds = standings.slice(0, 4);
+            franchise.seasonData.phase = 'playoffs';
+            franchise.seasonData.playoffs = {
+                round: 'semifinals',
+                seeds: playoffSeeds.map(team => team.id),
+                semifinalResults: [],
+                finalists: [],
+                finalResult: null,
+                championId: null,
+                managedPlacement: standings.findIndex(team => team.isManaged) + 1,
+                reward: 0,
+                rewardPaid: false
+            };
+        }
+
+        function calculateSeasonReward(team, placement) {
+            const playoffAward = placement === 1 ? 150000 : placement === 2 ? 75000 : placement <= 4 ? 30000 : 0;
+            const baseReward = 3000 + team.wins * 1500 + team.draws * 600 + playoffAward;
+            const rewardMultiplier = Math.max(1, Math.pow(getSus() / SEASON_REWARD_SCALE_BALANCE, SEASON_REWARD_SCALE_POWER));
+            return Math.floor(baseReward * rewardMultiplier);
+        }
+
+        function finishSeason(franchise) {
+            const playoffs = franchise.seasonData.playoffs;
+            const managed = managedTeam(franchise);
+            if (playoffs.rewardPaid) return;
+            const reward = calculateSeasonReward(managed, playoffs.managedPlacement);
+            playoffs.reward = reward;
+            playoffs.rewardPaid = true;
+            franchise.seasonData.phase = 'complete';
+            saveSus(getSus() + reward);
+        }
+
+        function playNextMatch(automatic = false, franchise = getCurrentFranchise()) {
+            if (!franchise || franchise.seasonData.phase !== 'regular') return;
+            const state = franchise.seasonData;
+            const games = state.schedule[state.week];
+            let managedResult = null;
+            for (const game of games) {
+                const result = simulateGame(franchise, game.home, game.away);
+                if (game.home === 'managed-team' || game.away === 'managed-team') {
+                    managedResult = managedMatchSummary(result, `Game ${state.week + 1}`);
+                }
+            }
+            state.week++;
+            syncFranchiseRecord(franchise);
+            const resultSummary = managedResult || { bye: true, week: `Game ${state.week}` };
+            if (franchise.id === selectedFranchiseId) latestMatch = resultSummary;
+            franchise.history.unshift(managedResult
+                ? { ...managedResult, week: state.week }
+                : { bye: true, week: state.week });
+            franchise.history = franchise.history.slice(0, 10);
+            if (state.week >= state.schedule.length) beginPlayoffs(franchise);
+            if (!automatic) {
+                saveCareer();
+                render();
+                setStatus(`${resultSummary.bye ? 'Bye game' : `${resultSummary.week}: ${resultSummary.outcome}`} complete. League results updated; no SUS was wagered.`);
+            }
+        }
+
+        function playPlayoffRound(automatic = false, franchise = getCurrentFranchise()) {
+            if (!franchise || franchise.seasonData.phase !== 'playoffs') return;
+            const state = franchise.seasonData;
+            const playoffs = state.playoffs;
+            if (playoffs.round === 'semifinals') {
+                const fixtures = [
+                    [playoffs.seeds[0], playoffs.seeds[3]],
+                    [playoffs.seeds[1], playoffs.seeds[2]]
+                ];
+                playoffs.semifinalResults = fixtures.map(([home, away]) => simulateGame(franchise, home, away, true));
+                playoffs.finalists = playoffs.semifinalResults.map(result => result.winnerId);
+                const managedLoss = playoffs.semifinalResults.findIndex(result =>
+                    (result.homeId === 'managed-team' || result.awayId === 'managed-team') && result.winnerId !== 'managed-team'
+                );
+                if (managedLoss >= 0) playoffs.managedPlacement = managedLoss === 0 ? 4 : 3;
+                playoffs.round = 'final';
+                const managedSemifinal = playoffs.semifinalResults.find(result =>
+                    result.homeId === 'managed-team' || result.awayId === 'managed-team'
+                );
+                if (franchise.id === selectedFranchiseId) {
+                    latestMatch = managedSemifinal ? managedMatchSummary(managedSemifinal, 'Semifinals') : null;
+                }
+                if (!automatic) {
+                    saveCareer();
+                    render();
+                    setStatus('Semifinals complete. Advance to the championship.');
+                }
+                return;
+            }
+            const [home, away] = playoffs.finalists;
+            playoffs.finalResult = simulateGame(franchise, home, away, true);
+            playoffs.championId = playoffs.finalResult.winnerId;
+            if (home === 'managed-team' || away === 'managed-team') {
+                playoffs.managedPlacement = playoffs.championId === 'managed-team' ? 1 : 2;
+                if (franchise.id === selectedFranchiseId) {
+                    latestMatch = managedMatchSummary(playoffs.finalResult, 'Championship');
+                }
+            } else {
+                if (franchise.id === selectedFranchiseId) latestMatch = null;
+            }
+            finishSeason(franchise);
+            if (!automatic) {
+                saveCareer();
+                updateWallet();
+                render();
+                setStatus(`Season complete. You earned ${playoffs.reward.toLocaleString()} SUS based on your record and finish.`);
+            }
+        }
+
+        function processAutomaticSimulation(now = Date.now()) {
+            const interval = SIMULATION_INTERVALS[career.simulationSpeed];
+            let changed = false;
+            let simulated = false;
+            for (const franchise of Object.values(career.franchises)) {
+                if (franchise.seasonData.phase === 'complete') continue;
+                if (franchise.lastSimulatedAt > now) {
+                    franchise.lastSimulatedAt = now;
+                    changed = true;
+                    continue;
+                }
+                const steps = Math.floor((now - franchise.lastSimulatedAt) / interval);
+                if (steps < 1) continue;
+                franchise.lastSimulatedAt += steps * interval;
+                changed = true;
+                simulated = true;
+                for (let step = 0; step < steps && franchise.seasonData.phase !== 'complete'; step++) {
+                    if (franchise.seasonData.phase === 'regular') {
+                        playNextMatch(true, franchise);
+                    } else if (franchise.seasonData.phase === 'playoffs') {
+                        playPlayoffRound(true, franchise);
+                    }
+                }
+            }
+            if (changed) saveCareer();
+            if (simulated) render();
+        }
+
+        function changeSimulationSpeed(speed) {
+            processAutomaticSimulation();
+            career.simulationSpeed = speed;
+            const now = Date.now();
+            for (const franchise of Object.values(career.franchises)) {
+                franchise.lastSimulatedAt = now;
+            }
+            saveCareer();
+        }
+
+        function startAutomaticSimulation() {
+            processAutomaticSimulation();
+            setInterval(() => processAutomaticSimulation(), 1000);
+        }
+
+        function trainTeam() {
+            const franchise = getCurrentFranchise();
+            if (!franchise) return;
+            if (getSus() < TRAINING_COST) {
+                setStatus(`Training costs ${TRAINING_COST.toLocaleString()} SUS. Your shared wallet is short.`);
+                return;
+            }
+            const team = managedTeam(franchise);
+            const weakest = TEAM_ATTRIBUTES.map(attribute => [
+                attribute,
+                Math.round(team.roster.reduce((sum, player) => sum + player.ratings[attribute], 0) / team.roster.length)
+            ]).sort((a, b) => a[1] - b[1])[0];
+            if (weakest[1] >= 99) {
+                setStatus('All team attributes are already at their training cap.');
+                return;
+            }
+            saveSus(getSus() - TRAINING_COST);
+            for (const player of team.roster) {
+                player.ratings[weakest[0]] = Math.min(99, player.ratings[weakest[0]] + 2);
+            }
+            team.strengths = calculateRosterStrengths(team.roster);
+            syncFranchiseRecord(franchise);
+            saveCareer();
+            updateWallet();
+            render();
+            setStatus(`${weakest[0][0].toUpperCase()}${weakest[0].slice(1)} training improved by 2. ${TRAINING_COST.toLocaleString()} SUS spent.`);
+        }
+
+        function tradePlayers() {
+            const franchise = getCurrentFranchise();
+            if (!franchise || franchise.seasonData.phase !== 'regular') return;
+            const team = managedTeam(franchise);
+            const [opponentId, opponentPlayerId] = document.getElementById('trade-incoming').value.split('::');
+            const opponentTeam = franchise.seasonData.teams.find(candidate => candidate.id === opponentId && !candidate.isManaged);
+            const outgoing = team.roster.find(player => player.id === document.getElementById('trade-outgoing').value);
+            const incoming = opponentTeam?.roster.find(player => player.id === opponentPlayerId);
+            if (!opponentTeam || !outgoing || !incoming) {
+                setStatus('Select one of your players and one available league player to trade.');
+                return;
+            }
+            const outgoingIndex = team.roster.indexOf(outgoing);
+            const incomingIndex = opponentTeam.roster.indexOf(incoming);
+            team.roster[outgoingIndex] = incoming;
+            opponentTeam.roster[incomingIndex] = outgoing;
+            team.strengths = calculateRosterStrengths(team.roster);
+            opponentTeam.strengths = calculateRosterStrengths(opponentTeam.roster);
+            syncFranchiseRecord(franchise);
+            saveCareer();
+            render();
+            setStatus(`Trade complete: ${incoming.name} joins ${team.name}; ${outgoing.name} moves to ${opponentTeam.name}.`);
+        }
+
+        function startNewSeason() {
+            const franchise = getCurrentFranchise();
+            if (!franchise || franchise.seasonData.phase !== 'complete') return;
+            const team = managedTeam(franchise);
+            franchise.season++;
+            franchise.lastSimulatedAt = Date.now();
+            franchise.history = [];
+            franchise.seasonData = createSeasonData(LEAGUE_BY_ID[franchise.leagueId], franchise, team.roster);
+            syncFranchiseRecord(franchise);
+            latestMatch = null;
+            saveCareer();
+            render();
+            setStatus(`Season ${franchise.season} is underway. No entry fee or match stake.`);
+        }
+
+        function renderStandings(franchise) {
+            const standings = getStandings(franchise);
+            return `<h3>League standings</h3><div class="table-wrap"><table class="standings">
+                <thead><tr><th>#</th><th>Club</th><th>W-L-D</th><th>Pts</th></tr></thead>
+                <tbody>${standings.map((team, index) => `<tr class="${team.isManaged ? 'managed-team' : ''}">
+                    <td>${index + 1}</td><td>${escapeHtml(team.name)}</td>
+                    <td>${team.wins}-${team.losses}-${team.draws}</td><td>${team.points}</td>
+                </tr>`).join('')}</tbody>
+            </table></div>`;
+        }
+
+        function renderRoster(team, season) {
+            const rosterRows = team.roster.map(player => `<tr>
+                <td>${escapeHtml(player.name)}</td><td>${escapeHtml(player.position)}</td>
+                <td>${ratingAverage(player.ratings).toFixed(0)}</td>
+                ${TEAM_ATTRIBUTES.map(attribute => `<td>${player.ratings[attribute]}</td>`).join('')}
+            </tr>`).join('');
+            const outgoingOptions = team.roster.map(player =>
+                `<option value="${escapeHtml(player.id)}">${escapeHtml(player.name)} · ${escapeHtml(player.position)} · OVR ${ratingAverage(player.ratings).toFixed(0)}</option>`
+            ).join('');
+            const incomingOptions = season.teams.filter(other => !other.isManaged).flatMap(other =>
+                other.roster.map(player => `<option value="${escapeHtml(`${other.id}::${player.id}`)}">${escapeHtml(player.name)} · ${escapeHtml(other.name)} · OVR ${ratingAverage(player.ratings).toFixed(0)}</option>`)
+            ).join('');
+            const tradesAllowed = season.phase === 'regular';
+            return `<h3>Roster &amp; trades</h3>
+                <div class="table-wrap"><table class="roster-table">
+                    <thead><tr><th>Player</th><th>Role</th><th>OVR</th>${TEAM_ATTRIBUTES.map(attribute => `<th>${attribute}</th>`).join('')}</tr></thead>
+                    <tbody>${rosterRows}</tbody>
+                </table></div>
+                <div class="trade-controls">
+                    <label class="field" for="trade-outgoing">Trade away<select id="trade-outgoing"><option value="" selected disabled>Choose your player</option>${outgoingOptions}</select></label>
+                    <label class="field" for="trade-incoming">Trade for<select id="trade-incoming"><option value="" selected disabled>Choose a league player</option>${incomingOptions}</select></label>
+                    <button type="button" id="trade-button" disabled>Swap players</button>
+                </div>
+                <p class="help">${tradesAllowed ? 'Player-for-player trades are free and update both clubs’ ratings.' : 'Trades are closed once the regular season ends.'}</p>`;
+        }
+
+        function renderTournament(franchise) {
+            const season = franchise.seasonData;
+            const standings = getStandings(franchise);
+            const playoffs = season.playoffs;
+            if (season.phase === 'regular') {
+                const managedRank = standings.findIndex(team => team.isManaged) + 1;
+                const projected = standings.slice(0, 4).map(team => escapeHtml(team.name)).join(' · ');
+                return `<section class="tournament"><h3>Playoff race</h3>
+                    <div>Your current seed: #${managedRank}. The top four qualify for single-game semifinals and a championship.</div>
+                    <p class="help">Current top four: ${projected}</p></section>`;
+            }
+            if (season.phase === 'playoffs') {
+                const names = playoffs.seeds.map(id => season.teams.find(team => team.id === id).name);
+                const outcomeList = playoffs.semifinalResults.map(result =>
+                    `<li>${escapeHtml(result.homeName)} ${result.homeScore}–${result.awayScore} ${escapeHtml(result.awayName)}</li>`
+                ).join('');
+                const heading = playoffs.round === 'semifinals' ? 'Playoff semifinals' : 'Championship';
+                const matchup = playoffs.round === 'semifinals'
+                    ? `${escapeHtml(names[0])} vs ${escapeHtml(names[3])} · ${escapeHtml(names[1])} vs ${escapeHtml(names[2])}`
+                    : playoffs.finalists.map(id => escapeHtml(season.teams.find(team => team.id === id).name)).join(' vs ');
+                return `<section class="tournament"><h3>${heading}</h3>
+                    <div>${playoffs.managedPlacement > 4 ? `Your club finished ${ordinal(playoffs.managedPlacement)} in the regular season and missed the playoffs.` : 'Top four seeds are competing for the title.'}</div>
+                    <p class="help">${matchup}</p>${outcomeList ? `<ul class="log">${outcomeList}</ul>` : ''}</section>`;
+            }
+            const champion = season.teams.find(team => team.id === playoffs.championId);
+            return `<section class="tournament"><h3>Season champion: ${escapeHtml(champion.name)}</h3>
+                <div>Your club finished ${ordinal(playoffs.managedPlacement)}.</div>
+                <p class="reward">Season award: +${playoffs.reward.toLocaleString()} SUS</p></section>`;
+        }
+
+        function ordinal(value) {
+            const suffix = value % 10 === 1 && value % 100 !== 11 ? 'st'
+                : value % 10 === 2 && value % 100 !== 12 ? 'nd'
+                    : value % 10 === 3 && value % 100 !== 13 ? 'rd' : 'th';
+            return `${value}${suffix}`;
+        }
+
+        function playoffsLabel(round) {
+            return round === 'semifinals' ? 'Semifinals' : 'Championship';
+        }
+
+        function renderClubManager() {
+            const franchise = getCurrentFranchise();
+            const empty = document.getElementById('empty-manager');
+            const container = document.getElementById('club-manager');
+            if (!franchise) {
+                empty.hidden = false;
+                container.hidden = true;
+                return;
+            }
+            empty.hidden = true;
+            container.hidden = false;
+            const season = franchise.seasonData;
+            const team = managedTeam(franchise);
+            const schedule = season.schedule;
+            const currentRound = schedule[season.week] || [];
+            const fixture = currentRound.find(game => game.home === 'managed-team' || game.away === 'managed-team');
+            const nextOpponent = fixture
+                ? season.teams.find(candidate => candidate.id === (fixture.home === 'managed-team' ? fixture.away : fixture.home))
+                : null;
+            const phaseLabel = season.phase === 'regular' ? 'Regular season'
+                : season.phase === 'complete' ? 'Season complete'
+                    : playoffsLabel(season.playoffs.round);
+            let scoreMarkup;
+            if (latestMatch) {
+                scoreMarkup = latestMatch.bye
+                    ? `<div class="score">${escapeHtml(latestMatch.week)} · BYE</div>`
+                    : `<div class="score">${escapeHtml(franchise.teamName)} ${escapeHtml(latestMatch.ownScore)}–${escapeHtml(latestMatch.opponentScore)} ${escapeHtml(latestMatch.opponent)}</div><div class="muted">${escapeHtml(latestMatch.week)} · ${escapeHtml(latestMatch.outcome.toUpperCase())}</div>`;
+            } else if (season.phase === 'regular') {
+                scoreMarkup = `<div class="score">Game ${season.week + 1} of ${schedule.length}</div><div class="muted">${nextOpponent ? `Next opponent: ${escapeHtml(nextOpponent.name)}` : 'Your club has a bye this game.'}</div>`;
+            } else if (season.phase === 'playoffs') {
+                scoreMarkup = `<div class="score">${playoffsLabel(season.playoffs.round)}</div><div class="muted">${season.playoffs.round === 'semifinals' ? 'Two semifinal games decide the finalists.' : 'One game decides the champion.'}</div>`;
+            } else {
+                scoreMarkup = '<div class="score">Season complete</div><div class="muted">Reward paid to your shared wallet.</div>';
+            }
+            const history = franchise.history.length
+                ? `<h3>Recent results</h3><ul class="log">${franchise.history.map(match => `<li>Game ${escapeHtml(match.week)}: ${escapeHtml(franchise.teamName)} ${escapeHtml(match.ownScore)}–${escapeHtml(match.opponentScore)} ${escapeHtml(match.opponent)} · ${escapeHtml(match.outcome)}</li>`).join('')}</ul>`
+                : '<p class="help">Simulate the first game to begin league play.</p>';
+            const nextAction = season.phase === 'regular' ? 'Simulate next game · no wager'
+                : season.phase === 'playoffs' ? `Simulate ${season.playoffs.round === 'semifinals' ? 'semifinals' : 'championship'} · no wager`
+                    : 'Start next season';
+            const action = season.phase === 'complete' ? startNewSeason
+                : season.phase === 'playoffs' ? playPlayoffRound : playNextMatch;
+            container.innerHTML = `
+                <div class="club-heading">
+                    <div><h2>${escapeHtml(franchise.teamName)}</h2><div class="seed">${escapeHtml(franchise.leagueName)} · Season ${escapeHtml(franchise.season)} · ${phaseLabel}</div></div>
+                    <div class="seed">Team rating ${ratingAverage(team.strengths).toFixed(0)}</div>
+                </div>
+                <div class="record-grid">
+                    <div class="record-cell"><strong>${team.wins}</strong><span>Wins</span></div>
+                    <div class="record-cell"><strong>${team.losses}</strong><span>Losses</span></div>
+                    <div class="record-cell"><strong>${team.draws}</strong><span>Draws</span></div>
+                    <div class="record-cell"><strong>${team.played}/${schedule.length}</strong><span>Games</span></div>
+                </div>
+                <div class="rating-row"><span>Offense ${team.strengths.offense}</span><span>Defense ${team.strengths.defense}</span><span>Speed ${team.strengths.speed}</span><span>Teamwork ${team.strengths.teamwork}</span></div>
+                <div class="match-box">${scoreMarkup}</div>
+                <div class="controls">
+                    <button type="button" id="next-game">${nextAction}</button>
+                    <button class="secondary" type="button" id="train-team" ${season.phase === 'complete' ? 'disabled' : ''}>Train weakest stat · ${TRAINING_COST.toLocaleString()} SUS</button>
+                </div>
+                <p class="help">Training uses shared SUS; matches and playoffs never charge a stake.</p>
+                ${renderTournament(franchise)}
+                ${renderStandings(franchise)}
+                ${renderRoster(team, season)}
+                ${history}`;
+            document.getElementById('next-game').addEventListener('click', () => action());
+            document.getElementById('train-team').addEventListener('click', trainTeam);
+            const tradeButton = document.getElementById('trade-button');
+            const updateTradeAvailability = () => {
+                tradeButton.disabled = season.phase !== 'regular' ||
+                    !document.getElementById('trade-outgoing').value ||
+                    !document.getElementById('trade-incoming').value;
+            };
+            document.getElementById('trade-outgoing').addEventListener('change', updateTradeAvailability);
+            document.getElementById('trade-incoming').addEventListener('change', updateTradeAvailability);
+            tradeButton.addEventListener('click', tradePlayers);
+        }
+
+        function render() {
+            updateWallet();
+            document.getElementById('simulation-speed').value = String(career.simulationSpeed);
+            document.getElementById('franchise-cost').textContent = FRANCHISE_COST.toLocaleString();
+            renderOwnedFranchises();
+            updateAcquisitionOptions();
+            renderClubManager();
+        }
+
+        document.getElementById('league-select').addEventListener('change', () => {
+            updateAcquisitionOptions();
+        });
+        document.getElementById('team-select').addEventListener('change', updateTeamPreview);
+        document.getElementById('custom-team-name').addEventListener('input', updateTeamPreview);
+        document.getElementById('acquire-button').addEventListener('click', () => {
+            const league = LEAGUE_BY_ID[document.getElementById('league-select').value];
+            const teamSelect = document.getElementById('team-select');
+            const customMode = teamSelect.value === CUSTOM_TEAM_OPTION;
+            const customName = document.getElementById('custom-team-name').value.trim();
+            if (customMode && league) {
+                const error = customNameError(league, customName);
+                if (error) {
+                    setStatus(error);
+                    return;
+                }
+            }
+            const team = league && (customMode
+                ? createCustomTeam(league, customName)
+                : league.teams.find(candidate => candidate.name === teamSelect.value));
+            if (!league || !team || leagueOwned(league.id)) return;
+            const cost = franchiseCount() === 0 ? 0 : FRANCHISE_COST;
+            if (getSus() < cost) {
+                setStatus(`You need ${cost.toLocaleString()} SUS to claim this franchise.`);
+                return;
+            }
+            if (cost > 0) saveSus(getSus() - cost);
+            const franchise = newFranchise(league, team);
+            career.nextId++;
+            career.franchises[franchise.id] = franchise;
+            selectedFranchiseId = franchise.id;
+            latestMatch = null;
+            saveCareer();
+            render();
+            setStatus(cost === 0 ? `${team.name} is your free first franchise.` : `${team.name} franchise purchased for ${cost.toLocaleString()} SUS.`);
+        });
+        document.getElementById('simulation-speed').addEventListener('change', event => {
+            const speed = Number(event.target.value);
+            if (SIMULATION_SPEEDS.includes(speed)) changeSimulationSpeed(speed);
+        });
+        window.addEventListener('focus', updateWallet);
+        startAutomaticSimulation();
+        render();
+    </script>
+</body>
+</html>
