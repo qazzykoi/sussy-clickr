@@ -30,12 +30,13 @@ const diamonds = [
 
 function ensurePlanetState() {
   game.jupiterGame ||= { heroes: 0, heroLevel: 0, keisDefeated: 0, keisDefeatedTotal: 0, keisHp: 0 };
-  game.neptuneGame ||= { excavators: 0, drillLevel: 0, diamondStock: {}, selectedDiamond: 'clear', memeCoin: { created: false, level: 0, treasury: 0 }, bankingApp: { created: false, level: 0, treasury: 0 } };
+  game.neptuneGame ||= { excavators: 0, drillLevel: 0, diamondStock: {}, selectedDiamond: 'clear', memeCoin: { created: false, level: 0, treasury: 0 }, bankingApp: { created: false, level: 0, treasury: 0 }, lastSimulationAt: 0 };
   game.voidGame ||= { revenueLevel: 0, intervalLevel: 0, cycles: 0, lastPayout: 0, consoleCompany: { founded: false, level: 0 }, carCompany: { founded: false, level: 0 } };
   game.jupiterGame.keisDefeatedTotal ??= game.jupiterGame.keisDefeated || 0;
   game.jupiterGame.keisHp ??= 0;
   game.neptuneGame.diamondStock ||= {};
   game.neptuneGame.selectedDiamond ||= 'clear';
+  game.neptuneGame.lastSimulationAt ||= (game.lastSaved > 0 ? game.lastSaved : Date.now());
   game.neptuneGame.memeCoin ||= { created: false, level: 0, treasury: 0, history: [] };
   game.neptuneGame.memeCoin.history ||= [];
   game.neptuneGame.bankingApp ||= { created: false, level: 0, treasury: 0, nodes: null, usage: 100 };
@@ -481,11 +482,15 @@ planetContent.addEventListener('pointerup', (event) => {
 function tick() {
   const neptune = game.neptuneGame;
   const state = game.voidGame;
-  neptune.memeCoin.treasury += neptune.memeCoin.created ? (8 + neptune.memeCoin.level * 10) * boost : 0;
-  neptune.bankingApp.treasury += neptune.bankingApp.created ? (12 + neptune.bankingApp.level * 15) * boost : 0;
+  const now = Date.now();
+  const elapsedSeconds = Math.max(0, (now - (neptune.lastSimulationAt || now)) / 1000);
+  neptune.lastSimulationAt = now;
+
+  neptune.memeCoin.treasury += (neptune.memeCoin.created ? (8 + neptune.memeCoin.level * 10) * boost : 0) * elapsedSeconds;
+  neptune.bankingApp.treasury += (neptune.bankingApp.created ? (12 + neptune.bankingApp.level * 15) * boost : 0) * elapsedSeconds;
   if (neptune.memeCoin.created) {
     const base = coinHistoryValue();
-    const wave = Math.sin(Date.now() / 2400) * 0.055;
+    const wave = Math.sin(now / 2400) * 0.055;
     neptune.memeCoin.history.push(Math.max(0.01, base + wave));
     if (neptune.memeCoin.history.length > 36) neptune.memeCoin.history.shift();
   }
@@ -493,10 +498,9 @@ function tick() {
   if (neptune.excavators > 0) {
     const picked = diamonds.find((item) => item.id === neptune.selectedDiamond) || diamonds[0];
     if (picked.tier <= Math.min(10, neptune.drillLevel + 1)) {
-      neptune.diamondStock[picked.id] = (Number(neptune.diamondStock[picked.id]) || 0) + neptune.excavators * (0.08 + neptune.drillLevel * 0.02) * boost;
+      neptune.diamondStock[picked.id] = (Number(neptune.diamondStock[picked.id]) || 0) + neptune.excavators * (0.08 + neptune.drillLevel * 0.02) * boost * elapsedSeconds;
     }
   }
-  const now = Date.now();
   if (!state.lastPayout) state.lastPayout = now;
   const interval = voidInterval();
   const completedCycles = Math.floor((now - state.lastPayout) / interval);
@@ -522,6 +526,10 @@ if (!unlocked[planet]) showLocked();
 else {
   if (planet === 'void' && !game.voidGame.lastPayout) game.voidGame.lastPayout = Date.now();
   render();
+  tick();
   setInterval(tick, 1000);
   setInterval(save, 10000);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) tick();
+  });
 }

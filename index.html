@@ -526,9 +526,8 @@
                 localStorage.removeItem('sussy_clicker_save');
                 localStorage.removeItem('playerData');
                 localStorage.removeItem('playerSusCurrency');
-                game = JSON.parse(JSON.stringify(DEFAULT_GAME));
-                saveGame();
-                updateUI();
+                window.game = JSON.parse(JSON.stringify(DEFAULT_GAME));
+                location.reload();
             }
         }
 
@@ -609,8 +608,20 @@
             }
         }
 
-        setInterval(() => { let sps = getSPS(); if (sps > 0) { game.susPoints += (sps / 20); updateUI(); } }, 50);
+        let lastPassiveUpdate = Date.now();
+        function runPassiveIncome() {
+            const now = Date.now();
+            const elapsedSeconds = Math.max(0, (now - lastPassiveUpdate) / 1000);
+            lastPassiveUpdate = now;
+            const sps = getSPS();
+            if (sps > 0) game.susPoints += sps * elapsedSeconds;
+            updateUI();
+        }
+        setInterval(runPassiveIncome, 50);
         setInterval(() => { saveGame(); }, 10000);
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) runPassiveIncome();
+        });
         const slangEncounters = [
             { text: "🚨 A WILD IMPOSTOR CHALLENGES YOU TO A SKIBIDI COIN FLIP! 🚨", winMsg: "💰 CHIPPED EM! You clutched the coin flip!", loseMsg: "🤡 SKILL ISSUE! He default danced and took your cash!" },
             { text: "📦 AN ULTRA RARE SUSSY SUPPLY DROP FELL IN THE VENT! 📦", winMsg: "🔥 WE ARE SO BACK! Pulled a Golden Skull Trooper!", loseMsg: "💀 CHALKED! Just a blue spray canister." },

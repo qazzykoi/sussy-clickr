@@ -925,6 +925,9 @@
         function startAutomaticSimulation() {
             processAutomaticSimulation();
             setInterval(() => processAutomaticSimulation(), 1000);
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) processAutomaticSimulation();
+            });
         }
 
         function trainTeam() {

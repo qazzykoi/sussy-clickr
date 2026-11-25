@@ -577,6 +577,9 @@
         renderMarket();
         updateMarketPrices();
         setInterval(updateMarketPrices, 3000);
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) updateMarketPrices();
+        });
     </script>
     <script src="auto-update.js"></script>
 </body>

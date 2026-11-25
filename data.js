@@ -113,14 +113,21 @@ function loadSharedGame() {
         throw new Error('Saved game has an invalid format.');
       }
       if (saved.susPoints === undefined) {
-        saved.susPoints = saved.sus ?? saved.points ?? saved.currency;
+        const nestedBalance = saved.balance && typeof saved.balance === 'object'
+          ? saved.balance.sus ?? saved.balance.points ?? saved.balance.amount
+          : undefined;
+        saved.susPoints = saved.sus ?? saved.points ?? saved.currency ?? saved.cash ?? saved.money ?? nestedBalance;
       }
+      const parsedSusPoints = Number(saved.susPoints);
+      if (Number.isFinite(parsedSusPoints)) saved.susPoints = Math.max(0, parsedSusPoints);
     } catch (error) {
       console.error('Unable to load the saved game data:', error);
       continue;
     }
 
     const migrated = deepMergeDefaults(DEFAULT_GAME, saved);
+    const normalizedSusPoints = Number(migrated.susPoints);
+    migrated.susPoints = Number.isFinite(normalizedSusPoints) ? Math.max(0, normalizedSusPoints) : 0;
     migrated.saveVersion = Math.max(Number(saved.saveVersion) || 0, SAVE_VERSION);
     if (key !== SAVE_KEY || !Number.isFinite(Number(saved.saveVersion)) || Number(saved.saveVersion) < SAVE_VERSION) {
       try {
